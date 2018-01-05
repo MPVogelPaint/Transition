@@ -6,7 +6,7 @@
       - [Loading Design](#loading-design)
       - [Saving Design](#saving-design)
       - [Form components](#form-components)
-      - [Guide for new Batch Part / Batch tab](#guide-for-new-batch-part-batch-tab)
+      - [Guide for new Batch Part and Batch tab](#guide-for-new-batch-part-and-batch-tab)
         - [Component Logic vs Batch Logic](#component-logic-vs-batch-logic)
         - [Required Files for Batch Parts](#required-files-for-batch-parts)
         - [Scaffolding out the Batch Part files](#scaffolding-out-the-batch-part-files)
@@ -96,7 +96,7 @@ We need to be able to call all the `Batch Part`s save operations from the `batch
 
 Angular allows us an easy way to make mini components good at one thing.  Because the bindings for Batch form controls can be tricky with the two sets of data (`originalData` and `dirtyData`) having a mini reusable component allows us to get it right once and then not worry about it again.
 
-#### Guide for new Batch Part / Batch tab
+#### Guide for new Batch Part and Batch tab
 
 This section will hopefully be useful when setting up new Batch Parts and different tabs in the Batch Module.
 
