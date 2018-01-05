@@ -126,7 +126,7 @@ Files and folder that need to be added / updated for adding the initial *Batch P
 
 Once these files have been added we can start fleshing them out.
 
-1. Fill out the Batch Part's Model(s) - `batch-complete/batch-complete.model.ts`
+1. Fill out the Batch Part's Model classes - `batch-complete/batch-complete.model.ts`
 
     First will be the actual model class for the Batch Part (`batch-complete.model.ts`). We should have this model start by matching what fields are being returned from the API.
 
@@ -143,9 +143,9 @@ Once these files have been added we can start fleshing them out.
     }
     ```
 
-    Because the API will return a sub-collection of BatchFillDetails we also define that model in this file. This may not always be the case as it could return a sub-collection of a type already defined in another file. Since we consider Fill Details a part of the Batch Completion and not a separable entity is why it is defined here.
+    Because the API will return a sub-collection of `BatchFillDetails` with our `BatchComplete` object, we also define that model in this file too. This may not always be the case as the API could return a sub-collection of a type already defined by another file. Since we consider Fill Details a part of the Batch Completion and not really possible to separable the entities is why `BatchFillDetail` is defined here.
 
-2. Expand the Batch Model and Enum - `batch/batch.model.ts`
+2. Expand the Batch Model class and enum - `batch/batch.model.ts`
 
     The entire Batch is part of the `batch` object. For that object to hold our new *Batch Part* we need to expand that model and related enum.
 
@@ -166,11 +166,11 @@ Once these files have been added we can start fleshing them out.
     So in this update we add the Batch Part class as an import so we can use that type later.
 
     Then we add a property `Complete`, this is how we will access the `Batch Complete` data.
-    The added `Complete` property is wrapped in another class `BatchData` more on that later, it is a class that gives extra ways to interact with the data for making things like local storage and data status easier and consistent to do later.
+    The added `Complete` property is wrapped in another class `BatchData`. We will get more detail on `BatchData` class later, but it is a wrapper class that gives extra ways to interact with the data. Having our `BatchComplete` class be wrapped in this give s consistent way to do those extra features. (See [Local Storage Batch Design](#local-storage-batch-design) for more detail.)
 
-    Finally we add `this.Complete = null;` to the constructor to make the initial Batch object have a property for the the `Complete` on creation.
+    Finally we add `this.Complete = null;` to the constructor to make the initial Batch object have a property for the the `Complete` during `batch` object creation.
 
-    In the same file we will add the the enum `BatchPart`:
+    In the same file we will add to the enum `BatchPart`:
 
     ```ts
     export enum BatchPart {
@@ -179,11 +179,11 @@ Once these files have been added we can start fleshing them out.
     }
     ```
 
-    The string value `'Complete'` should match the property name `Complete` and the property name should match the field that we added to the `batch` object: `Complete: BatchData<BatchComplete>`. Adding to this enum makes interacting with the Batch object more consistent and easier to do later.
+    The string value `'Complete'` should match the property name `Complete` and the property name should match the field that we added to the `batch` object: `Complete: BatchData<BatchComplete>`. Adding to this enum makes interacting with the Batch object more consistent and easier to do later.  Using an enum rather than plain strings allows Typescript to enforce data integrity.
 
-3. Update our Batch Part's Service (`batch-complete/batch-complete.service.ts`)
+3. Update the Batch Part's Service (`batch-complete/batch-complete.service.ts`)
 
-    We want to update the *Batch Part's* service class so that we can get data out of it.
+    We want to update the *Batch Part's* service class so that we retrieve data with it.
 
     ```ts
     // Import Statements
@@ -295,7 +295,7 @@ Once these files have been added we can start fleshing them out.
     }
     ```
 
-    These three functions are a way to load the `Batch Part` in a partial sense. This will be called if we only want to leave any modifications that the user has made in place, but still refresh the rest of the data. For a *pristine* field that means both the `dirtyData` and `originalData` copies of that field will be updated. For a *dirty* field that means that only the `originalData` copy of the data will be updated. The prevents the user from losing their work while still being able to see the latest known values on the server.
+    These three functions are a way to load the `Batch Part` in a partial sense. This will be called if we only want to leave any modifications that the user has made in place, but still refresh the rest of the data. For a *pristine* field that means both the `dirtyData` and `originalData` copies of that field will be updated. For a *dirty* field that means that only the `originalData` copy of the data will be updated. This prevents the user from losing their work while still being able to see the latest known values on the server.
 
     The final block we need right now is a `isPristine(...)` function. This function will need to compare each value between the `dirtyData` and `originalData` copies to tell if the value has changed. We cannot rely on the Angular *pristine* value because we are storing it in Local Storage and lose those attributes on storage and retrieval. One hurdle with the pristine check is that it cannot directly compare sub-collections based on something like the item's index in the array. Instead we need to know the identifier or primary key field so that if there are additions or removals from the array we can compare the correct items against each other. There may be an option to simplify this by looping through `Object.keys(...)` result, but you need to be able to traverse into sub-collections correctly as well.
 
@@ -309,11 +309,15 @@ Once these files have been added we can start fleshing them out.
     }
     ```
 
-    At this point our service class should be ready to be consumed for reading data. We will return to this file later when we are ready to implement saving, but for now we can continue. We won't consume this directly instead we will need to go through the `batch.service.ts`.
+    At this point our service class should be all set to be consumed by our component for reading data. We will return to this file later when we are ready to implement saving functionality, but for now we can continue with other files.
+    
+    We won't consume this loading logic directly component, instead we will need to go through the `batch.service.ts`.
 
 4. Updating the Batch Service (`batch/batch.service.ts`)
 
-    Start out by updating references and properties to support the new *Batch Part* type.
+    The Batch Service is going to facilitate access to each of the `Batch Part`'s service classes, and Local Storage.
+    
+    We will begin by updating the `import` references and local properties to support the new *Batch Part* type.
 
     ```ts
     ...
@@ -379,9 +383,9 @@ Once these files have been added we can start fleshing them out.
     }
     ```
 
-    With this we can see it is calling out to the function we created in the `Batch Service` that is in charge of returning the `Batch Part`'s data. This function will setup the observable to be subscribed to by the Component and store that observable function in the `obs` field of our `BatchData<BatchPart>`. We don't subscribe to the `obs` at this level because it is an asynchronous action and will instead wait to subscribe to it until we are in the Component for our new `Batch Part`.
+    With this we can see it is calling out to the function we just created in the `Batch Part`'s Service that is in charge of returning the `Batch Part`'s data. This function will setup the observable to be subscribed to by the Component and store that cold observable in the `obs` field of our `BatchData<BatchPart>`. We don't subscribe to the `obs` at this level because it is an asynchronous action and will instead wait to subscribe to it until we are in the Component for our new `Batch Part`.
 
-    All the other methods (except the save functions) should be able to work on their own without needing an update for the new `Batch Part`. The other functions in this class are intended to provide a consistent way to work with the Batch Parts with some utility functions, and functions to ensure storing the `batch` in Local Storage is consistent.
+    All the other methods (except the save functions) should be able to work on their own without needing an update for the new `Batch Part`. The other functions in this class are intended to provide a consistent way to work with the `Batch Part`s with some utility functions, and functions to ensure storing the `batch` in Local Storage is consistent.
 
 5. Adding Batch Part Logic to the Component - (`batch-complete/batch-complete.component.ts`)
 
