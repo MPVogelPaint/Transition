@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+        <style>
+/*--------------------------------------------------------------------------------------------- * Copyright (c) Microsoft Corporation. All rights reserved. * Licensed under the MIT License. See License.txt in the project root for license information. *--------------------------------------------------------------------------------------------*/ body { font-family: "Segoe WPC", "Segoe UI", "SFUIText-Light", "HelveticaNeue-Light", sans-serif, "Droid Sans Fallback"; font-size: 14px; padding: 0 12px; line-height: 22px; word-wrap: break-word; } body.scrollBeyondLastLine { margin-bottom: calc(100vh - 22px); } body.showEditorSelection .code-line { position: relative; } body.showEditorSelection .code-active-line:before, body.showEditorSelection .code-line:hover:before { content: ""; display: block; position: absolute; top: 0; left: -12px; height: 100%; } body.showEditorSelection li.code-active-line:before, body.showEditorSelection li.code-line:hover:before { left: -30px; } .vscode-light.showEditorSelection .code-active-line:before { border-left: 3px solid rgba(0, 0, 0, 0.15); } .vscode-light.showEditorSelection .code-line:hover:before { border-left: 3px solid rgba(0, 0, 0, 0.40); } .vscode-dark.showEditorSelection .code-active-line:before { border-left: 3px solid rgba(255, 255, 255, 0.4); } .vscode-dark.showEditorSelection .code-line:hover:before { border-left: 3px solid rgba(255, 255, 255, 0.60); } .vscode-high-contrast.showEditorSelection .code-active-line:before { border-left: 3px solid rgba(255, 160, 0, 0.7); } .vscode-high-contrast.showEditorSelection .code-line:hover:before { border-left: 3px solid rgba(255, 160, 0, 1); } img { max-width: 100%; max-height: 100%; } a { color: #4080D0; text-decoration: none; } a:focus, input:focus, select:focus, textarea:focus { outline: 1px solid -webkit-focus-ring-color; outline-offset: -1px; } hr { border: 0; height: 2px; border-bottom: 2px solid; } h1 { padding-bottom: 0.3em; line-height: 1.2; border-bottom-width: 1px; border-bottom-style: solid; } h1, h2, h3 { font-weight: normal; } h1 code, h2 code, h3 code, h4 code, h5 code, h6 code { font-size: inherit; line-height: auto; } a:hover { color: #4080D0; text-decoration: underline; } table { border-collapse: collapse; } table > thead > tr > th { text-align: left; border-bottom: 1px solid; } table > thead > tr > th, table > thead > tr > td, table > tbody > tr > th, table > tbody > tr > td { padding: 5px 10px; } table > tbody > tr + tr > td { border-top: 1px solid; } blockquote { margin: 0 7px 0 5px; padding: 0 16px 0 10px; border-left: 5px solid; } code { font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback"; font-size: 14px; line-height: 19px; } body.wordWrap pre { white-space: pre-wrap; } .mac code { font-size: 12px; line-height: 18px; } code > div { padding: 16px; border-radius: 3px; overflow: auto; } /** Theming */ .vscode-light { color: rgb(30, 30, 30); } .vscode-dark { color: #DDD; } .vscode-high-contrast { color: white; } .vscode-light code { color: #A31515; } .vscode-dark code { color: #D7BA7D; } .vscode-light code > div { background-color: rgba(220, 220, 220, 0.4); } .vscode-dark code > div { background-color: rgba(10, 10, 10, 0.4); } .vscode-high-contrast code > div { background-color: rgb(0, 0, 0); } .vscode-high-contrast h1 { border-color: rgb(0, 0, 0); } .vscode-light table > thead > tr > th { border-color: rgba(0, 0, 0, 0.69); } .vscode-dark table > thead > tr > th { border-color: rgba(255, 255, 255, 0.69); } .vscode-light h1, .vscode-light hr, .vscode-light table > tbody > tr + tr > td { border-color: rgba(0, 0, 0, 0.18); } .vscode-dark h1, .vscode-dark hr, .vscode-dark table > tbody > tr + tr > td { border-color: rgba(255, 255, 255, 0.18); } .vscode-light blockquote, .vscode-dark blockquote { background: rgba(127, 127, 127, 0.1); border-color: rgba(0, 122, 204, 0.5); } .vscode-high-contrast blockquote { background: transparent; border-color: #fff; }
+</style>
+<style>
+/* Tomorrow Theme */ /* http://jmblog.github.com/color-themes-for-google-code-highlightjs */ /* Original theme - https://github.com/chriskempson/tomorrow-theme */ /* Tomorrow Comment */ .hljs-comment, .hljs-quote { color: #8e908c; } /* Tomorrow Red */ .hljs-variable, .hljs-template-variable, .hljs-tag, .hljs-name, .hljs-selector-id, .hljs-selector-class, .hljs-regexp, .hljs-deletion { color: #c82829; } /* Tomorrow Orange */ .hljs-number, .hljs-built_in, .hljs-builtin-name, .hljs-literal, .hljs-type, .hljs-params, .hljs-meta, .hljs-link { color: #f5871f; } /* Tomorrow Yellow */ .hljs-attribute { color: #eab700; } /* Tomorrow Green */ .hljs-string, .hljs-symbol, .hljs-bullet, .hljs-addition { color: #718c00; } /* Tomorrow Blue */ .hljs-title, .hljs-section { color: #4271ae; } /* Tomorrow Purple */ .hljs-keyword, .hljs-selector-tag { color: #8959a8; } .hljs { display: block; overflow-x: auto; color: #4d4d4c; padding: 0.5em; } .hljs-emphasis { font-style: italic; } .hljs-strong { font-weight: bold; }
+</style>
+<style>
+ul.contains-task-list { padding-left: 0; } ul ul.contains-task-list { padding-left: 40px; } .task-list-item { list-style-type: none; } .task-list-item-checkbox { vertical-align: middle; }
+</style>
+        <style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', 'HelveticaNeue-Light', 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+    </head>
+    <body>
+        <h1 id="transition">Transition</h1>
+<h2 id="production-tracking-beta">Production Tracking Beta</h2>
+<h3 id="batch-module">Batch Module</h3>
+<h4 id="overview">Overview</h4>
+<p>The idea that we were trying to go for with the batch module was a way to split of all of the parts to a batch to make loading easier.
+We also wanted to store the loaded batch information locally to make reloading a batch fast and give a chance for limited offline capabilities.
+Storing the batch locally allows changing different batch parts and then committing a save action once for all of them.</p>
+<h4 id="local-storage-batch-design">Local Storage Batch Design</h4>
+<p>When a batch is loaded we want to only load the necessary parts of the batch, not the whole thing. For example when we load the <code>Order</code> tab we want to only load the data related to that tab.
+However, we also want to keep all of the batch parts together in local storage and attached to a single <code>Batch</code> object there. This lead to having a <code>Batch.Order</code> batch part.
+When the batch is stored the first time it will just be a <code>Batch</code> object with the <code>Batch.Order</code> property loaded with data.
+Once we move to the <code>Complete</code> tab we will load that data and attach it to the <code>Batch</code> object on the <code>Batch.Complete</code> property. The single <code>Batch</code> object will now have two batch parts,
+and this can continue for any number of parts we decide to add to the <code>Batch</code>. This gives some amount of modularity to the batch.</p>
+<p>We store the batch using a single key <code>PT-Batch-123456</code>.</p>
+<ol>
+<li>The <code>PT-</code> signifies that this local storage object should go with <code>Production Tracking</code>, this is needed because local storage is shared at a per <code>Origin</code> level.
+So basically per sub-domain, and since our sites are one the same origin we need this to keep the apps local storage items together.</li>
+<li>The <code>Batch-</code> signifies that the object in local storage is a <code>Batch</code> type object. We current store other object there too.</li>
+<li>The final number string is the identifier for the <code>MFG.Production_Batch</code>. The unique key gives a way to keep track of the stored batch. Can't use something that might be temporary like a Lot Number.</li>
+</ol>
+<p>When the <code>Batch</code> object is loaded and is being consumed by the <code>Component</code> we want to also keep track of any changes that occur to the object.
+What we do is any time that a form detects a <code>(ngModelChange)</code> we bind that to a function that eventually call the <code>Batch Service</code>'s Update Local Storage function. That function will take the Batch or Part
+and store it Local storage. This can happen immediately as it doesn't appear to be a intensive operation even when local storage is almost full.</p>
+<p>The second part to keeping track of any changes is that we actually keep two copies of each <code>Batch Part</code> that is loaded.</p>
+<ol>
+<li>The first copy <code>originalData</code> is just that. The original copy of the data that was loaded from the server. This copy of the data shouldn't be updated except when reloading from the server.</li>
+<li>The second copy of the data is <code>dirtyData</code> is the data that should be bound to the templates forms controls, and is editable. This copy of the data will be what is accessible by the user to edit.
+Keeping two copies of the data is necessary as we can't whole trust Angular's dirty/pristine state as we may be loading the data from local storage, and Angular's form states will be pristine even if the local storage data is dirty.
+With the two copies of the data we can compare them against each other to tell which fields truly are different.
+This can be used for a visual indicator for the user, as a way to check if the data has changed before saving, or to see how the data should be reloaded from the server.</li>
+</ol>
+<p>In keeping track of local storage we also have a property on the whole <code>Batch</code> object called <code>lastTouched</code>. This indicates when the last time this Batch Object was loaded by a component.
+When local storage is full this is used to determine what items can be purged to make room for new <code>Batch</code>es.</p>
+<p>Each <code>Batch Part</code> also has a <code>dateLoaded</code> property and similar to the <code>lastTouched</code> it indicates when the last time the <code>Batch Part</code> was loaded.
+This is used however to determine if the <code>Batch Part</code> should be loaded from Local Storage or reloaded from the API.</p>
+<h4 id="loading-design">Loading Design</h4>
+<p>A <code>Batch</code> and <code>Batch Part</code> can be loaded in a couple of different ways.</p>
+<p>(<code>batch.service.ts -&gt; getBatch(...)</code>)
+The first attempt will be to check local storage for the <code>Batch/Batch Part</code>. This will setup the <code>Batch Part</code> to a initial state if it didn't exist. It will also setup the observable property on the <code>Batch Part</code>.</p>
+<p>Once the batch is returned to the component to be consumed we can <code>subscribe</code> to <code>obs</code> observable. We need to subscribe at this level or the subscription will return after the object has returned to the component.
+For the <code>Batch Order</code> the obs will look like this:
+(<code>batch-order.service.ts -&gt; getBatchDataOrder(...)</code>)</p>
+<ol>
+<li>If the local storage <code>Batch</code> object exists with that <code>Batch Part</code> then we need to check if it is <em>stale</em> or not.</li>
+<li>If it is not <em>stale</em> then we can load from Local Storage.</li>
+<li>If it is <em>stale</em> then we need to check if it is <em>pristine</em> or not.</li>
+<li>If it is <em>pristine</em> then we can load the whole <code>Batch Part</code> (<code>Batch.Order</code>) again.</li>
+<li>If it is not <em>pristine</em> then we need to do a partial load. This will leave <code>dirtyData</code> fields alone if they are actually <em>dirty</em>.
+<em>Pristine</em> field will have both copies of the data updated. This allows the user to keep things that they've edited there, but also updated the data to show what is currently known on the server.</li>
+<li>If the local storage <code>Batch</code> object does not exist then it can be loaded from the server normally.</li>
+</ol>
+<h4 id="saving-design">Saving Design</h4>
+<p>The saving for a <code>Batch</code> is intended to be a single action that can cover multiple <code>Batch Part</code>.
+The <code>batch.service.ts -&gt; save(...)</code> is the main driver of the operation.
+How it works is that each <code>Batch Part</code> will have it's own <code>save(...)</code> method that returns a <code>ResponseDetail</code> about the save.
+Then when the global save is called that will check with each <code>Batch Part</code> that has been loaded and check to see if it is <em>dirty</em>. If so it will add that <code>Batch Part</code>'s <code>save</code> operation to the main <code>observable</code>.
+When the main observable is ready all the sub parts are subscribed to and triggers those save operations on the server.
+When they all complete it will determine if there any of the parts had issues and report that to the user, otherwise it will reload the data from the server to make sure everything is fresh after the save.
+We need to be able to call all the <code>Batch Part</code>s save operations from the <code>batch.service.ts</code> from any component because a <code>Batch Part</code> could be changed, then the user might reload the page and come back to another <code>Batch Part</code> and save both.</p>
+<h4 id="form-components">Form components</h4>
+<p>Angular allows us an easy way to make mini components good at one thing.  Because the bindings for Batch form controls can be tricky with the two sets of data (<code>originalData</code> and <code>dirtyData</code>) having a mini reusable component allows us to get it right once and then not worry about it again.</p>
+<h4 id="guide-for-new-batch-part-batch-tab">Guide for new Batch Part / Batch tab</h4>
+<p>This section will hopefully be useful when setting up new Batch Parts and different tabs in the Batch Module.</p>
+<h5 id="component-logic-vs-batch-logic">Component Logic vs Batch Logic</h5>
+<p>Components will interact with their data in different ways to meet the requirements that the component needs.  All Batch Parts will load and save their data in a similar way however.  These sections will refer to logic in loading or saving a batch part with the global Batch Service as <em>Batch Part Logic</em> and logic specific to the current component / implementation details for the component as <em>Component Logic</em>.</p>
+<h5 id="required-files-for-batch-parts">Required Files for Batch Parts</h5>
+<p>For this example I'll use Batch Complete as existing code to follow.</p>
+<p>Files and folder that need to be added / updated for adding the initial <em>Batch Part Logic</em>.</p>
+<ol>
+<li>Component Directory (<code>batch-complete</code>)
+<ol>
+<li><code>batch-complete.component.css</code> - Should be included during generation, but no Batch Part data is required in this file.</li>
+<li><code>batch-complete.component.html</code> - Should be included during generation, but no Batch Part data is required in this file.  This will eventually have <em>Component Logic</em> that interacts with the <em>Batch Part</em>, but not required at the outset.</li>
+<li><code>batch-complete.component.ts</code> - Should be included during generation, and we will be adding <em>Batch Part Logic</em> to this file for loading <em>Batch Parts</em>.</li>
+<li><code>batch-complete.model.ts</code> - This will need to be added manually. This will define the shape of the object we get back from the API and that will be part of the <code>BatchData</code> object.</li>
+<li><code>batch-complete.service.ts</code> - This will house logic for retrieving or storing the <em>Batch Part's</em> data from the API and some related logic. Like all the other services this will need to be manually added the module so it can be provided.</li>
+</ol>
+</li>
+<li>Batch Directory (<code>batch</code>)
+<ol>
+<li><code>batch.model.ts</code> - We will add to this file to support the new <em>Batch Part</em>.</li>
+<li><code>batch.service.ts</code> - We will add to this file to support the new <em>Batch Part</em>.</li>
+</ol>
+</li>
+<li>Batch Navigation Directory (<code>batch-navigation</code>)
+<ol>
+<li><code>batch-navigation.mock.ts</code> - We will add or update a record in this file when adding a new tab to the Batch Module.</li>
+</ol>
+</li>
+</ol>
+<h5 id="scaffolding-out-the-batch-part-files">Scaffolding out the Batch Part files</h5>
+<p>Once these files have been added we can start fleshing them out.</p>
+<ol>
+<li>
+<p>Fill out the Batch Part's Model(s) - <code>batch-complete/batch-complete.model.ts</code></p>
+<p>First will be the actual model class for the Batch Part (<code>batch-complete.model.ts</code>). We should have this model start by matching what fields are being returned from the API.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> BatchComplete {
+  BatchID: <span class="hljs-built_in">number</span>;
+  ...
+  FillDetails: BatchFillDetail[];
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> BatchFillDetail {
+  BatchFillDetailID: <span class="hljs-built_in">number</span>;
+  ...
+}
+</div></code></pre>
+<p>Because the API will return a sub-collection of BatchFillDetails we also define that model in this file. This may not always be the case as it could return a sub-collection of a type already defined in another file.  Since we consider Fill Details a part of the Batch Completion and not a separable entity is why it is defined here.</p>
+</li>
+<li>
+<p>Expand the Batch Model and Enum - <code>batch/batch.model.ts</code></p>
+<p>The entire Batch is part of the <code>batch</code> object. For that object to hold our new <em>Batch Part</em> we need to expand that model and related enum.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> { BatchComplete } from <span class="hljs-string">'../batch-complete/batch-complete.model'</span>;
+...
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> Batch {
+  ...
+  Complete: BatchData&lt;BatchComplete&gt;;
+  ...
+  <span class="hljs-keyword">constructor</span>(id?: number) {
+    ...
+    <span class="hljs-keyword">this</span>.Complete = <span class="hljs-literal">null</span>;
+  }
+}
+</div></code></pre>
+<p>So in this update we add the Batch Part class as an import so we can use that type later.</p>
+<p>Then we add a property <code>Complete</code>, this is how we will access the <code>Batch Comlete</code> data.
+The added <code>Complete</code> property is wrapped in another class <code>BatchData</code> more on that later, it is a class that gives extra ways to interact with the data for making things like local storage and data status easier and consistent to do later.</p>
+<p>Finally we add <code>this.Complete = null;</code> to the constructor to make the initial Batch object have a property for the the <code>Complete</code> on creation.</p>
+<p>In the same file we will add the the enum <code>BatchPart</code>:</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">export</span> <span class="hljs-keyword">enum</span> BatchPart {
+  ...
+  Complete = <span class="hljs-string">'Complete'</span>
+}
+</div></code></pre>
+<p>The string value <code>'Complete'</code> should match the property name <code>Complete</code> and the property name should match the field that we added to the <code>batch</code> object: <code>Complete: BatchData&lt;BatchComplete&gt;</code>.  Adding to this enum makes interacting with the Batch object more consistent and easier to do later.</p>
+</li>
+<li>
+<p>Update our Batch Part's Service (<code>batch-complete/batch-complete.service.ts</code>)</p>
+<p>We want to update the <em>Batch Part's</em> service class so that we can get data out of it.</p>
+<pre class="hljs"><code><div><span class="hljs-comment">// Import Statements</span>
+...
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> BatchCompleteService {
+  <span class="hljs-keyword">constructor</span>(
+    private http: Http
+  ) { }
+
+  getBatchDataComplete(batchIdentifier: BatchIdentifier, existingBatchComplete: BatchData&lt;BatchComplete&gt;): Observable&lt;BatchData&lt;BatchComplete&gt;&gt; {
+    <span class="hljs-keyword">let</span> batchDataOrderObservable: Observable&lt;BatchData&lt;BatchComplete&gt;&gt;;
+    <span class="hljs-keyword">let</span> staleDate: <span class="hljs-built_in">Date</span> = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>();
+    staleDate = subMinutes(staleDate, environment.batchPartStaleLimit);
+
+    <span class="hljs-keyword">if</span> (existingBatchComplete != <span class="hljs-literal">null</span> &amp;&amp; existingBatchComplete.originalData != <span class="hljs-literal">null</span>) {
+      <span class="hljs-comment">// Batch Order Object exists in local storage</span>
+      <span class="hljs-keyword">if</span> (isBefore(existingBatchComplete.dateLoaded, staleDate)) {
+        <span class="hljs-comment">// Batch Order Object exceeds the stale limit.</span>
+        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">this</span>.isPristine(existingBatchComplete)) {
+          <span class="hljs-comment">// Stale and pristine we can just reload. No potential data lost.</span>
+          batchDataOrderObservable = <span class="hljs-keyword">this</span>.loadBatchComplete(batchIdentifier, existingBatchComplete);
+        } <span class="hljs-keyword">else</span> {
+          <span class="hljs-comment">// Stale and dirty we need to reload the originalData copy and warn user.</span>
+          batchDataOrderObservable = <span class="hljs-keyword">this</span>.partialLoadBatchComplete(batchIdentifier, existingBatchComplete);
+        }
+      } <span class="hljs-keyword">else</span> {
+        <span class="hljs-comment">// Batch Order Object is within the stale limit.</span>
+        batchDataOrderObservable = Observable.of(existingBatchComplete);
+      }
+    } <span class="hljs-keyword">else</span> {
+      <span class="hljs-comment">// Batch Order Object doesn't exist in local storage and needs to be loaded fresh.</span>
+      batchDataOrderObservable = <span class="hljs-keyword">this</span>.loadBatchComplete(batchIdentifier, existingBatchComplete);
+    }
+
+    <span class="hljs-keyword">return</span> batchDataOrderObservable;
+  }
+}
+</div></code></pre>
+<p>So in this block we setup the class's initial imports and make the <code>http</code> class available to use.</p>
+<p>Then in the <code>getBatchDataComplete(...)</code> function we are making a way to return an observable of the <code>BatchComplete</code> data from either the API or from the one that is already known in local storage (more on that part later).  The logic in the method is checking different properties on the <code>Batch Data</code> object of type <code>Batch Complete</code>.  If the object doesn't exist it will go straight to the API or if the object is <em>pristine</em> and <em>stale</em>.  Otherwise if it is <em>dirty</em> or <em>fresh</em> then it will load it in a different manner.  See the Loading Design section.</p>
+<p>The reason this loading mechanic is more complex is that we want to keep track of two copies of the data with the <code>BatchData&lt;T&gt;</code> design. One being editable <code>dirtyData</code> and the other only what is returned by the server <code>originalData</code>. See the Local Storage Batch Design section for more detail on these ideas.</p>
+<p>This function we've setup calls other functions on the <code>batch-complete.service.ts</code> so we will need those too.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">private</span> loadBatchComplete(batchIdentifier: BatchIdentifier, existingBatchComplete: BatchData&lt;BatchComplete&gt;): Observable&lt;BatchData&lt;BatchComplete&gt;&gt; {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.http
+    .get(<span class="hljs-string">`<span class="hljs-subst">${environment.webapiRoot}</span>BatchCompletion/<span class="hljs-subst">${batchIdentifier.BatchID}</span>`</span>)
+    .map((r: Response) =&gt; {
+      <span class="hljs-keyword">let</span> batchComplete = r.json() as BatchComplete;
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> BatchData&lt;BatchComplete&gt;(batchComplete);
+    });
+}
+</div></code></pre>
+<p>This function is the default way to load data from the API.  It will setup both copies (<code>dirtyData</code> and <code>originalData</code>) to what is returned by the server.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">private</span> partialLoadBatchComplete(batchIdentifier, existingBatchComplete: BatchData&lt;BatchComplete&gt;): Observable&lt;BatchData&lt;BatchComplete&gt;&gt; {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.http
+    .get(<span class="hljs-string">`<span class="hljs-subst">${environment.webapiRoot}</span>BatchCompletion/<span class="hljs-subst">${batchIdentifier.BatchID}</span>`</span>)
+    .map((r: Response) =&gt; {
+      <span class="hljs-keyword">let</span> freshBatchComplete = r.json() as BatchComplete;
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.refreshBatchComplete(existingBatchComplete, freshBatchComplete);
+  });
+}
+
+<span class="hljs-keyword">private</span> refreshBatchComplete(existingBatchComplete: BatchData&lt;BatchComplete&gt;, freshBatchComplete: BatchComplete): BatchData&lt;BatchComplete&gt; {
+  <span class="hljs-built_in">Object</span>.keys(existingBatchComplete.dirtyData).forEach(batchCompleteFieldKey =&gt; {
+    <span class="hljs-keyword">if</span> (batchCompleteFieldKey === <span class="hljs-string">'FillDetails'</span>) {
+      <span class="hljs-keyword">this</span>.refreshCollectionField(existingBatchComplete.dirtyData.FillDetails, existingBatchComplete.originalData.FillDetails, freshBatchComplete.FillDetails, <span class="hljs-string">'BatchFillDetailID'</span>);
+    } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (batchCompleteFieldKey === <span class="hljs-string">'StaffTimeDetails'</span>) {
+      <span class="hljs-keyword">this</span>.refreshCollectionField(existingBatchComplete.dirtyData.StaffTimeDetails, existingBatchComplete.originalData.StaffTimeDetails, freshBatchComplete.StaffTimeDetails, <span class="hljs-string">'BatchStaffID'</span>);
+    } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (batchCompleteFieldKey === <span class="hljs-string">'SerialFillDetails'</span>) {
+      <span class="hljs-keyword">this</span>.refreshCollectionField(existingBatchComplete.dirtyData.SerialFillDetails, existingBatchComplete.originalData.SerialFillDetails, freshBatchComplete.SerialFillDetails, <span class="hljs-string">'BatchSerialFillDetailID'</span>);
+    } <span class="hljs-keyword">else</span> {
+    }
+  });
+  <span class="hljs-keyword">return</span> existingBatchComplete;
+}
+
+<span class="hljs-keyword">private</span> refreshCollectionField(dirtyDataArray: <span class="hljs-built_in">any</span>[], originalDataArray: <span class="hljs-built_in">any</span>[], freshDataArray: <span class="hljs-built_in">any</span>[], identifierField: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">void</span> {
+  dirtyDataArray.forEach(dirtyItem =&gt; {
+    <span class="hljs-keyword">let</span> originalItem = originalDataArray.find(x =&gt; x[identifierField] === dirtyItem[identifierField]);
+    <span class="hljs-keyword">let</span> freshItem = freshDataArray.find(x =&gt; x[identifierField] === dirtyItem[identifierField]);
+
+    <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> freshItem === <span class="hljs-string">'undefined'</span> || freshItem == <span class="hljs-literal">null</span>) {
+      <span class="hljs-comment">// No fresh item</span>
+      <span class="hljs-keyword">if</span> (dirtyItem[identifierField] &lt; <span class="hljs-number">0</span>) {
+        <span class="hljs-comment">// Negative id indicates new item that we can leave alone on the client side.</span>
+      } <span class="hljs-keyword">else</span> {
+        <span class="hljs-comment">// Removed from server. <span class="hljs-doctag">TODO:</span> Should remove at client?</span>
+        dirtyDataArray = dirtyDataArray.filter(x =&gt; x[identifierField] !== dirtyItem[identifierField]);
+      }
+    } <span class="hljs-keyword">else</span> {
+      <span class="hljs-comment">// Fresh Item found so still exists</span>
+      <span class="hljs-comment">// <span class="hljs-doctag">TODO:</span> This assumes that the collection fields won't themselves have collection fields.</span>
+      <span class="hljs-built_in">Object</span>.keys(dirtyItem).forEach(itemFieldKey =&gt; {
+        <span class="hljs-keyword">if</span> (dirtyItem[itemFieldKey] === originalItem[itemFieldKey]) {
+          dirtyItem[itemFieldKey] = freshItem[itemFieldKey];
+        }
+        originalItem[itemFieldKey] = freshItem[itemFieldKey];
+      });
+    }
+  });
+}
+</div></code></pre>
+<p>These three functions are a way to load the <code>Batch Part</code> in a partial sense.  This will be called if we only want to leave any modifications that the user has made in place, but still refresh the rest of the data.  For a <em>pristine</em> field that means both the <code>dirtyData</code> and <code>originalData</code> copies of that field will be updated. For a <em>dirty</em> field that means that only the <code>originalData</code> copy of the data will be updated.  The prevents the user from losing their work while still being able to see the latest known values on the server.</p>
+<p>The final block we need right now is a <code>isPristine(...)</code> function.  This function will need to compare each value between the <code>dirtyData</code> and <code>originalData</code> copies to tell if the value has changed. We cannot rely on the Angular <em>pristine</em> value because we are storing it in Local Storage and lose those attributes on storage and retrieval.  One hurdle with the pristine check is that it cannot directly compare sub-collections based on something like the item's index in the array. Instead we need to know the identifier or primary key field so that if there are additions or removals from the array we can compare the correct items against each other.  There may be an option to simplify this by looping through <code>Object.keys(...)</code> result, but you need to be able to traverse into sub-collections correctly as well.</p>
+<pre class="hljs"><code><div>isPristine(batchComplete: BatchData&lt;BatchComplete&gt;): <span class="hljs-built_in">boolean</span> {
+  <span class="hljs-keyword">let</span> result = <span class="hljs-literal">true</span>;
+
+  <span class="hljs-comment">// Here for each field in the Model we will compare the two copies of data. If different we will set result to false;</span>
+
+  <span class="hljs-keyword">return</span> result;
+}
+</div></code></pre>
+<p>At this point our service class should be ready to be consumed for reading data. We will return to this file later when we are ready to implement saving, but for now we can continue. We won't consume this directly instead we will need to go through the <code>batch.service.ts</code>.</p>
+</li>
+<li>
+<p>Updating the Batch Service (<code>batch/batch.service.ts</code>)</p>
+<p>Start out by updating references and properties to support the new <em>Batch Part</em> type.</p>
+<pre class="hljs"><code><div>...
+<span class="hljs-keyword">import</span> { BatchCompleteService } from <span class="hljs-string">'../batch-complete/batch-complete.service'</span>;
+<span class="hljs-keyword">import</span> { BatchComplete } from <span class="hljs-string">'../batch-complete/batch-complete.model'</span>;
+...
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> BatchService {
+  ...
+  <span class="hljs-keyword">constructor</span>(
+    ...
+    batchCompleteService: BatchCompleteService
+  ) { }
+  ...
+}
+</div></code></pre>
+<p>With the property and types available we can expand the <code>getBatch(...)</code> function.  This function will be called by our Component later to get the batch from local storage and setup the observables for the required batch parts (indicated by the second parameter: <code>batchParts</code>).</p>
+<pre class="hljs"><code><div>getBatch(...): Observable&lt;Batch&gt; {
+  ...
+  <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> batchParts !== <span class="hljs-string">'undefined'</span> &amp;&amp; batchParts != <span class="hljs-literal">null</span>) {
+    batchParts.forEach(batchPart =&gt; {
+      <span class="hljs-keyword">switch</span>(batchPart) {
+        ...
+        <span class="hljs-keyword">case</span> BatchPart.Complete: {
+          <span class="hljs-keyword">if</span> (batch.Complete == <span class="hljs-literal">null</span>) {
+            batch.Complete = <span class="hljs-keyword">new</span> BatchData&lt;BatchComplete&gt;();
+            batch.Complete.isStale = <span class="hljs-literal">true</span>;
+            batch.Complete.isPristine = <span class="hljs-literal">true</span>;
+            batch.Complete.dateLoaded = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>();
+          } <span class="hljs-keyword">else</span> {
+            batch.Complete.isStale = isBefore(batch.Complete.dateLoaded, staleDate);
+            <span class="hljs-keyword">if</span> (batch.Complete.isStale) {
+              batch.Complete.isPristine = <span class="hljs-keyword">this</span>.batchCompleteService.isPristine(batch.Complete);
+            }
+          }
+          <span class="hljs-keyword">break</span>;
+        ...
+        }
+      }
+    });
+  }
+  ...
+  batch = <span class="hljs-keyword">this</span>.setupObs(batch, batchIdentifier);
+  <span class="hljs-keyword">return</span> Observable.of(batch);
+}
+</div></code></pre>
+<p>With this change the new <code>Batch Part</code> will be setup correctly when the batch is requested and asks for that part.  What's going on is that we need to setup the object to an initial state if it hasn't been loaded before. And if it has been loaded before we want to check on its status (pristineness and freshness).</p>
+<p>This <code>getBatch(...)</code> function we updated calls out to another function <code>setupObs(...)</code> that we will also need to update to work with our new <code>Batch Part</code>.</p>
+<pre class="hljs"><code><div>setupObs(batch: Batch, batchIdentifier: BatchIdentifier): Batch {
+  ...
+  <span class="hljs-keyword">if</span> (batch.Complete != <span class="hljs-literal">null</span>) {
+    batch.Complete.obs = <span class="hljs-keyword">this</span>.batchCompleteService.getBatchDataComplete(batchIdentifier, batch.Complete);
+  }
+  ...
+  <span class="hljs-keyword">return</span> batch;
+}
+</div></code></pre>
+<p>With this we can see it is calling out to the function we created in the <code>Batch Service</code> that is in charge of returning the <code>Batch Part</code>'s data.  This function will setup the observable to be subscribed to by the Component and store that observable function in the <code>obs</code> field of our <code>BatchData&lt;BatchPart&gt;</code>.  We don't subscribe to the <code>obs</code> at this level because it is an asynchronous action and will instead wait to subscribe to it until we are in the Component for our new <code>Batch Part</code>.</p>
+<p>All the other methods (except the save functions) should be able to work on their own without needing an update for the new <code>Batch Part</code>.  The other functions in this class are intended to provide a consistent way to work with the Batch Parts with some utility functions, and functions to ensure storing the <code>batch</code> in Local Storage is consistent.</p>
+</li>
+<li>
+<p>Adding Batch Part Logic to the Component - (<code>batch-complete/batch-complete.component.ts</code>)</p>
+<p>Finally we've gotten to the Batch Part's Component file.  This file will house both the <em>Batch Part Logic</em> and the <em>Component Logic</em>.</p>
+<p>Since we are scaffolding out the <em>Batch Part Logic</em> that's where we will start. Unlike many other components these <em>Batch Part</em> components won't directly access their respective services. Instead they will interact with the <code>Batch Service</code> which will inturn interact with their services. We do this so that the <code>Batch Service</code> facilitates consistent access to the service and to local storage.</p>
+<p>So getting started on the component we will add some boilerplate items.</p>
+<pre class="hljs"><code><div><span class="hljs-comment">// We need some imports from Angular and RxJs</span>
+<span class="hljs-keyword">import</span> { Component, OnInit, OnDestroy } from <span class="hljs-string">'@angular/core'</span>;
+<span class="hljs-keyword">import</span> { ActivatedRoute, Params } from <span class="hljs-string">'@angular/router'</span>;
+<span class="hljs-keyword">import</span> { Observable } from <span class="hljs-string">'rxjs/Observable'</span>;
+<span class="hljs-keyword">import</span> { Subscription } from <span class="hljs-string">'rxjs/Subscription'</span>;
+
+<span class="hljs-comment">// We need to import the model for this specific Batch Part</span>
+<span class="hljs-keyword">import</span> { BatchComplete, BatchFillDetail } from <span class="hljs-string">'./batch-complete.model'</span>;
+<span class="hljs-comment">// We need to import the model for the entire batch, the Batch Data type, and the enum for BatchPart</span>
+<span class="hljs-keyword">import</span> { Batch, BatchData, BatchPart } from <span class="hljs-string">'../batch/batch.model'</span>;
+<span class="hljs-comment">// We need to import the Batch Identifier model and service to access our batch part correctly.</span>
+<span class="hljs-keyword">import</span> { BatchIdentifier } from <span class="hljs-string">'../batch-identifier.model'</span>;
+<span class="hljs-keyword">import</span> { BatchIdentifierService } from <span class="hljs-string">'../batch-identifier.service'</span>;
+
+<span class="hljs-comment">// We will add more imports later for Component Logic and for saving the batch part</span>
+...
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> BatchCompleteComponent <span class="hljs-keyword">implements</span> OnInit, OnDestroy {
+  <span class="hljs-comment">// We need a local property to keep track of the Batch Identifier. The Batch Identifier is a collection of keys and identifiers to access a specific Batch.</span>
+  batchIdentifier: BatchIdentifier;
+  <span class="hljs-comment">// We need a local property of the Batch Part's data that we get back from the Batch Service.  We initialize it here to it is able to be bound to on the first iteration of the Angular life cycle.  It is a BatchData type rather than a simple BatchPart type.</span>
+  batchComplete: BatchData&lt;BatchComplete&gt; = <span class="hljs-keyword">new</span> BatchData&lt;BatchComplete&gt;(<span class="hljs-keyword">new</span> BatchComplete());
+  <span class="hljs-comment">// We will add more *Component Logic* properties.  This will include things related to the View Mode, lookups, and external buttons like in the Application Navbar Menu.</span>
+  ...
+
+  <span class="hljs-comment">// For the Batch Part Logic these are the only services that need to be setup.  We will add more services / classes / subscriptions when adding the Component Logic.</span>
+  <span class="hljs-keyword">constructor</span>(
+    private batchService: BatchService,
+    private batchIdentifierService: BatchIdentifierService,
+    private route: ActivatedRoute,
+    ...
+  )
+
+  ngOnInit() {
+    <span class="hljs-comment">// We compartmentalize the data loading logic to it's own function. There might be other non-data related loading logic that might need to be included here and don't want those things together.</span>
+    <span class="hljs-keyword">this</span>.loadData();
+  }
+}
+</div></code></pre>
+<p>This is the initial boilerplate that we need before we start getting into the details of loading the new Batch Part's data.</p>
+<pre class="hljs"><code><div>...
+loadData(): <span class="hljs-built_in">void</span> {
+  <span class="hljs-keyword">this</span>.setupBatchComplete(); <span class="hljs-comment">// This is logic specific to loading the desired Batch Part.</span>
+
+  <span class="hljs-comment">// Here we can add logic / function calls to load other lookup data that only needs to be accessed once. Metadata / lookup data that is dependent on the specific batch should happen after that batch has been loaded.</span>
+
+  <span class="hljs-comment">/* Example: This set of metadata doesn't care what the batch part's details are so it can be loaded at this time.
+  this.unitOfMeasureService.getCommonUnitsOfMeasure()
+    .subscribe((unitsOfMeasure: UnitOfMeasure[]) =&gt; {
+      this.unitsOfMeasure = unitsOfMeasure;
+    });
+  */</span>
+}
+
+<span class="hljs-comment">// This function is going to be the main function for loading the Batch Part's data.</span>
+setupBatchComplete(): <span class="hljs-built_in">void</span> {
+  <span class="hljs-keyword">this</span>.route.parent.params
+    .switchMap((params: Params) =&gt; {
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.batchIdentifierService.getBatchID(params[<span class="hljs-string">'id'</span>]);
+    })
+    .switchMap((batchIdentifier: BatchIdentifier[]) =&gt; {
+      <span class="hljs-keyword">this</span>.batchIdentifier = batchIdentifier[<span class="hljs-number">0</span>];
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.batchService.getBatch(<span class="hljs-keyword">this</span>.batchIdentifier, [BatchPart.Complete]);
+    })
+    .subscribe((batch: Batch) =&gt; {
+      batch.Complete.obs
+        .subscribe((batchComplete: BatchData&lt;BatchComplete&gt;) =&gt; {
+          <span class="hljs-keyword">this</span>.batchComplete = batchComplete;
+          <span class="hljs-keyword">this</span>.batchCompleteChange();
+        });
+    });
+}
+</div></code></pre>
+<p>While <code>loadData(...)</code> is pretty straightforward, <code>setupBatchComplete(...)</code> has a lot going on inside of it so let's break it down.</p>
+<p>The first section:</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">this</span>.route.parent.params
+  .switchMap((params: Params) =&gt; {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.batchIdentifierService.getBatchID(params[<span class="hljs-string">'id'</span>]);
+  })
+</div></code></pre>
+<p>What's happening is we are looking at the Route Parameters (these are different than Query Parameters).  The Route Parameter of <code>id</code> is setup by the <code>batch-routing.module.ts</code> when we make the path to all the Batch and Batch Parts.  The format of <code>batch\&lt;id&gt;\&lt;batch tab&gt;</code>.  That route param of <code>id</code> is then added to the <code>BatchIdentifierService</code> function <code>getBatchID(...)</code> as the parameter.  The <code>id</code> parameter should be a <code>Lot Number</code> to access the <code>Batch</code> by.  Because we are using a <code>switchMap(...)</code> this function (and therefor the following chained functions) will be recalled anytime the <code>id</code> parameter changes.</p>
+<p>The second <code>.switchMap(...)</code>:</p>
+<pre class="hljs"><code><div>.switchMap((batchIdentifier: BatchIdentifier[]) =&gt; {
+  <span class="hljs-keyword">this</span>.batchIdentifier = batchIdentifier[<span class="hljs-number">0</span>];
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.batchService.getBatch(<span class="hljs-keyword">this</span>.batchIdentifier, [BatchPart.Complete]);
+})
+</div></code></pre>
+<p>This <code>switchMap(...)</code> is receiving a result from the previous <code>switchMap(...)</code> of the <code>BatchIdentifier</code> object for the given <code>id</code>. The returning <code>BatchIdentifier</code> object will have a key value on it of <code>BatchID</code> which is the comes from the <code>MFG.Production_Batch.Production_Batch_PK</code> field.  This and possibly other fields in the <code>BatchIdentifier</code> are likely required by the API/DB to access the <code>Batch Part</code>'s data that the component will be after.</p>
+<p>So with that Identifier now available we will call our <code>Batch Service</code>'s <code>getBatch(...)</code> function.  This function is one of the ones we expanded earlier to work with the new <code>Batch Part</code>.  When we call this funciton we pass the BatchIdentifier (for accessing the API correctly), and we pass an array of <code>Batch Part</code>s.  We pass an array because there are times when a component will need to load more than one data <code>Batch Part</code>.  For the example we will leave it with a single <code>Batch Part</code> what we've just added.  By adding the other Batch Part loading logic to the <code>Batch Part's Service</code> we made it easier if this new <code>Batch Part</code> needs to be used elsewhere later on too.</p>
+<p>The <code>getBatch(...)</code> function will return the whole <code>Batch</code> object, and make sure it is setup to load the desired <code>Batch Part</code> we passed in the array (although there might not be any data in our <code>Batch Part</code> just yet).</p>
+<p>Our final <code>.subscribe(...)</code> is where we really get the <code>Batch</code> object and related <code>Batch Parts</code> available to work with.</p>
+<pre class="hljs"><code><div>.subscribe((batch: Batch) =&gt; {
+  batch.Complete.obs
+    .subscribe((batchComplete: BatchData&lt;BatchComplete&gt;) =&gt; {
+      <span class="hljs-keyword">this</span>.batchComplete = batchComplete;
+      <span class="hljs-keyword">this</span>.batchCompleteChange();
+    });
+});
+</div></code></pre>
+<p>In this example our <code>Batch Part</code> (<code>Batch Complete</code>) is the only batch part that we care about on the <code>Batch</code> object we only need to work with it in this area.  We take the <code>Batch</code> object that is setup by the previous function, and since in an earlier step we altered the <code>setupObs(...)</code> function in the <code>batch.service.ts</code> section; we have an <code>obs</code> property that will represent the <code>Batch Part</code> Service's function <code>getBatchDataComplete(...)</code> function.  So when we subscribe to that function now it will determine if we have a <em>stale</em> or <em>fresh</em>, <em>pristine</em> or <em>dirty</em> <code>Batch Part</code> and will take the appropriate action to return the data either what was existing in the Local Storage <code>Batch</code> object, or will call out to the API to get something fresher.  We take what ever the result of the <code>obs</code> subscription and store it in our local property <code>this.batchComplete</code>.  We now have an object available to be bind our template's data to.</p>
+<p>The final line <code>this.batchCompleteChange()</code> is a method we will call in the component to store our <code>Batch Part</code> again in Local Storage (we want to do this if we got new data from the API that needs to be remembered by the application).</p>
+<p>We can add that method now. Note if there are more is more than one <code>Batch Part</code> that is being worked with in the component then each time that <code>Batch Part</code> is changed it should notify it's own version of that function or allow for switching what <code>Batch Part</code> type is being updated.</p>
+<pre class="hljs"><code><div>...
+batchCompleteChange(): <span class="hljs-built_in">void</span> {
+  <span class="hljs-keyword">this</span>.batchService.storeBatch(<span class="hljs-keyword">this</span>.batchIdentifier, <span class="hljs-keyword">this</span>.batchComplete, BatchPart.Complete);
+}
+...
+</div></code></pre>
+<p>So this simple function is calling a function that didn't need to be edited on the <code>Batch Service</code> that will take the enum of the the <code>Batch Part</code> (<code>BatchPart.Complete</code>) to know what part is being passed/updated and then the actual local property of <code>this.batchComplete</code> will get added to the <code>Batch</code> object and stored in Local Storage.  As mentioned in Local Storage Batch Design section this should be chained into by any changes that occur in the <code>Batch Part</code>'s Component.</p>
+<p>At this point the <code>Batch Part</code>'s data should be available and we can now get into the implementation details for the component.  Once we have some Component Logic we will return to the Batch Part Logic for saving.</p>
+</li>
+</ol>
+<h5 id="scaffolding-out-the-batch-part-component-specific-logic">Scaffolding out the Batch Part component specific logic</h5>
+<p>Now that <code>Batch Part</code>'s data is available to be consumed in the client we can get into the implementation details for our new component.  Some of the first things we will do is build an example of how to interact with both set of the data contained in the <code>BatchData&lt;BatchPart&gt;</code> that we just created and made available to the component.  We will also look at setting up the form to have different states (view/edit).  Finally look at some details about keeping our Local Storage <code>Batch</code> object up to date with changes that occur in the component.</p>
+<ol>
+<li>
+<p>We will start out simple with allowing the component to recognize different view states or <code>ViewMode</code>s.  The Application Menu (<code>core/application-menu</code>) should already have a set of buttons that are available when viewing a <code>batch</code> (url = `batch/.../batchPart), but we will have to wire up our component to listen to those events and handle them for our context.</p>
+<p>We will continue to expand the component file (<code>batch-complete.component.ts</code>)</p>
+<pre class="hljs"><code><div>...
+<span class="hljs-keyword">import</span> { ViewMode } from <span class="hljs-string">'../../core/view-mode/view-mode.model'</span>; <span class="hljs-comment">// There is a View Mode enum already available to use.</span>
+<span class="hljs-keyword">import</span> { ApplicationMenuService } from <span class="hljs-string">'../../core/application-menu/application-menu.service'</span>;
+...
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> BatchCompleteComponent <span class="hljs-keyword">implements</span> OnInit, OnDestroy {
+  ...
+  <span class="hljs-comment">// This is a local property of our imported enum. This enum contains all possible states the page could be in.</span>
+  <span class="hljs-comment">// We need to set a local property to a copy of it because our template can't directly access an imported enum.</span>
+  ViewMode = ViewMode;
+  <span class="hljs-comment">// We will also have a local property to keep track of the current state of the page, and will start the page off in `View` mode.</span>
+  mode: ViewMode = ViewMode.View;
+  <span class="hljs-comment">// We need a subscription to be able to listen to our Application Menu actions</span>
+  menuSubscription: Subscription
+  ...
+
+  <span class="hljs-keyword">constructor</span>(
+    ...
+    applicationMenuService: ApplicationMenuService // We will add a property of the service to be used by the component.
+  ) {
+    <span class="hljs-comment">// Right away we will have our constructor being to listen to the Application Menu</span>
+    <span class="hljs-keyword">this</span>.menuSubscription = applicationMenuService.menuEvent$.subscribe(event =&gt; {
+      <span class="hljs-comment">// When the Application Menu emits an event we will process that event with this function.</span>
+      <span class="hljs-keyword">this</span>.processMenuEvent(event);
+    })
+  }
+  
+  <span class="hljs-comment">// We won't do anything new to this function.</span>
+  ngOnInit() {
+    <span class="hljs-keyword">this</span>.loadData();
+  }
+
+  <span class="hljs-comment">// But like the ngOnInit() we now need to do an action during the destroy phase</span>
+  ngOnDestory() {
+    <span class="hljs-comment">// Unsubscribing from the Application Menu prevents a memory leak and prevents the subscription from staying open and listening after it should be gone.</span>
+    <span class="hljs-keyword">this</span>.menuSubscription.unsubscribe();
+  }
+
+  ...
+
+  processMenuEvent(event): <span class="hljs-built_in">void</span> {
+    <span class="hljs-keyword">switch</span> (event) {
+      <span class="hljs-keyword">case</span> <span class="hljs-string">'EDIT'</span>:
+        <span class="hljs-keyword">this</span>.changeViewMode(ViewMode.Edit);
+        <span class="hljs-keyword">break</span>;
+      <span class="hljs-keyword">case</span> <span class="hljs-string">'CANCEL'</span>:
+        <span class="hljs-keyword">this</span>.changeViewMode(ViewMode.View);
+        <span class="hljs-keyword">break</span>;
+      <span class="hljs-keyword">case</span> <span class="hljs-string">'SAVE'</span>:
+        <span class="hljs-keyword">this</span>.save();
+        <span class="hljs-keyword">break</span>;
+    }
+  }
+
+  changeViewMode(mode: ViewMode): <span class="hljs-built_in">void</span> {
+    <span class="hljs-keyword">this</span>.mode = mode;
+  }
+
+  ...
+}
+</div></code></pre>
+<p>At this point we have a functionality to listen to the Application Menu and react to the View Mode changes from buttons available.</p>
+</li>
+<li>
+<p>With the ability to switch between page states we can add some form items to see how the data should be rendered on the page. A simple field in the example <code>Batch Part</code>: <code>Batch Complete</code> is <code>CompleteAmount</code> which is a simple numeric value. Since the value is available in our <code>this.batchComplete</code> local property we can start work in the template file: <code>bacth-complete.component.html</code>.</p>
+<p>While a simple binding like this would suffice to display the value it doesn't really take advantage of the extra work that we've put in to setting up our <code>Batch Part</code>'s <code>Batch Data</code> typed object. A simple binding like this also doesn't take advantage of our <code>ViewMode</code> property to display an editable field.</p>
+<pre class="hljs"><code><div><span class="hljs-tag">&lt;<span class="hljs-name">span</span>&gt;</span>{{batchComplete.dirtyData.CompleteAmount}}<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+</div></code></pre>
+<p>To fully take advantage of our two copies of the data and the view state we should have the form control react in different ways and give an option to edit the value:</p>
+<pre class="hljs"><code><div><span class="hljs-tag">&lt;<span class="hljs-name">div</span> [<span class="hljs-attr">ngClass</span>]=<span class="hljs-string">"{'form-group': true, 'has-warning': batchComplete.dirtyData.CompleteAmount !== batchComplete.originalData.CompleteAmount &amp;&amp; viewMode !== ViewMode.New}"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">label</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"control-label"</span> <span class="hljs-attr">for</span>=<span class="hljs-string">"completeAmountInput"</span>&gt;</span>Complete Amount
+    <span class="hljs-tag">&lt;<span class="hljs-name">i</span> *<span class="hljs-attr">ngIf</span>=<span class="hljs-string">"batchComplete.dirtyData.CompleteAmount !== batchComplete.originalData.CompleteAmount &amp;&amp; viewMode !== ViewMode.New"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"glyphicon glyphicon-info-sign"</span> <span class="hljs-attr">tooltip</span>=<span class="hljs-string">"Original Value: {{batchComplete.originalData.CompleteAmount}}"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">input</span> *<span class="hljs-attr">ngIf</span>=<span class="hljs-string">"viewMode === ViewMode.Edit || viewMode === ViewMode.New"</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"number"</span> <span class="hljs-attr">id</span>=<span class="hljs-string">"completeAmountInput"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"form-control"</span> [(<span class="hljs-attr">ngModel</span>)]=<span class="hljs-string">"batchComplete.dirtyData.CompleteAmount"</span> (<span class="hljs-attr">ngModelChange</span>)=<span class="hljs-string">"batchCompleteChange()"</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> *<span class="hljs-attr">ngIf</span>=<span class="hljs-string">"viewMode === ViewMode.View"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"form-control-static"</span>&gt;</span>{{batchComplete.dirtyData.CompleteAmount}}<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</div></code></pre>
+<p>This will render to something like this:</p>
+<p><img src="file:///c%3A/Users/markp/Desktop/Transition/BatchComplete_CompleteAmount.gif" alt="alt text" title="Logo Title Text 1"></p>
+<p>Fair amount of stuff going on in that block, but what it gives us is a couple of nice things:</p>
+<ol>
+<li>Paragraph or an Input element based on our View Mode. Plain text paragraph elements are easier to read than something like a disabled input during a View Mode.</li>
+<li>The Input element is a <code>type=&quot;number&quot;</code> which will give the browser a spinner option and keep the data value the correct number type.</li>
+<li>The element has consistent Bootstrap styling with the rest of the application's forms.</li>
+<li>The previous known value for the field is also known.
+<ol>
+<li>This gives us an option to show a styling of <code>has-warning</code> for the control if the value has changed. This gives the user a quick visual indication what parts they've touched.</li>
+<li>We can display the previous value incase they pause while working and need to know the what it was before they started modifying it.</li>
+</ol>
+</li>
+<li>With the <code>(ngModelChange)=...</code> we are able to notify the batch service with the function set up in the previous section for storing an updated <code>Batch Part</code>.</li>
+</ol>
+<p>We can break down each section of the template</p>
+<ol>
+<li>The wrapping <code>&lt;div&gt;</code> is styled to get a class of <code>has-warning</code> if the copies of data are different (<em>dirty</em>), and if view mode is not <em>New</em> (View Mode of <em>New</em> would only have ever have a value in the <code>dirtyData</code> copy.)</li>
+<li>The next block <code>&lt;label&gt;</code> has a <code>for</code> property to give a click on the label focus to the Input element, and then the text value of <code>Complete Amount</code>.
+<ol>
+<li>Inside that Label we have an optional Icon with a tooltip.  The icon shows with the same rule as the <code>has-warning</code> class for the form control, and the tooltip is being bound to the <code>originalData</code> copy of data. It's ok to use this field in the template such that the user never has an option to edit the underlying value.</li>
+</ol>
+</li>
+<li>Next we have an <code>&lt;input&gt;</code> tag that only shows during the view modes for <em>Edit</em> or <em>New</em>.  It binds to the <code>dirtyData</code> copy of the field and has a change event trigger to store updated values to our Local Storage object.</li>
+<li>The final element is the plain text paragraph display of the <code>dirtyData</code> this gives a easier way to read the values of the form when the page is in <em>View</em> mode.</li>
+</ol>
+<ul>
+<li>Side Note: We can see we are using the <code>enum</code>: <code>ViewMode</code> in the template here. This is why we needed to import it and make a local property copy of the <code>enum</code>.</li>
+</ul>
+</li>
+<li>
+<p>In order to get these nice to have those features we have the tradeoff of a relatively complex template markup. Since it is likely that our forms will have several input controls form number values it'd be nice to be able to write this markup quickly and consistently.  We can make a mini-component just for this one bunch of form control elements and house any related logic in that component.  Making a generic version gives us a way to easily update all of them in the future if we have a necessary fix or feature improvement.</p>
+<p>In the <code>batch/batch-form</code> directory we could add a new component <code>batch-form-input-number</code> directory and component.  This input template style is unique to the batch module where we have this dual data copies (<code>BatchData</code>).  Other simpler forms like in the <code>metadata</code> module don't require this added functionality.  If they need components for simpler form controls those would be separate and likely live in the <code>core</code> module.</p>
+<p>For our <code>batch-form-input-number.component.html</code> template we can make it generic by doing something like this:</p>
+<pre class="hljs"><code><div><span class="hljs-tag">&lt;<span class="hljs-name">div</span> [<span class="hljs-attr">ngClass</span>]=<span class="hljs-string">"{'form-group': true, 'has-warning': value !== originalValue &amp;&amp; viewMode !== ViewMode.New}"</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">label</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"control-label"</span> [<span class="hljs-attr">for</span>]=<span class="hljs-string">"id"</span>&gt;</span>{{label}}
+    <span class="hljs-tag">&lt;<span class="hljs-name">i</span> *<span class="hljs-attr">ngIf</span>=<span class="hljs-string">"value !== originalValue &amp;&amp; viewMode !== ViewMode.New"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"glyphicon glyphicon-info-sign"</span> <span class="hljs-attr">tooltip</span>=<span class="hljs-string">"Original Value: {{originalValue | commaNumbers}}"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">i</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">label</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">input</span> *<span class="hljs-attr">ngIf</span>=<span class="hljs-string">"viewMode === ViewMode.Edit || viewMode === ViewMode.New"</span> <span class="hljs-attr">type</span>=<span class="hljs-string">"number"</span> [<span class="hljs-attr">id</span>]=<span class="hljs-string">"id"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"form-control"</span> [(<span class="hljs-attr">ngModel</span>)]=<span class="hljs-string">"value"</span> /&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">p</span> *<span class="hljs-attr">ngIf</span>=<span class="hljs-string">"viewMode === ViewMode.View"</span> <span class="hljs-attr">class</span>=<span class="hljs-string">"form-control-static"</span>&gt;</span>{{value | commaNumbers}}<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</div></code></pre>
+<p>Data pieces that change are turned into property fields; things like the label's value, the value for the originalData, or the id of the element.  To get these fields populated we need to accept them as <code>Input</code> parameters to our component.  To add these we will edit out <code>batch-form-input-number.component.ts</code> file.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> { Component, forwardRef, Input } from <span class="hljs-string">'@angular/core'</span>;
+<span class="hljs-keyword">import</span> { NG_VALUE_ACCESSOR } from <span class="hljs-string">'@angular/forms'</span>;
+<span class="hljs-keyword">import</span> { BatchFormWrapper, BatchFormValueAccessor } from <span class="hljs-string">'../batch-form-wrapper'</span>;
+<span class="hljs-keyword">import</span> { ViewMode } from <span class="hljs-string">'../../../core/view-mode/view-mode.model'</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> BATCH_FORM_VALUE_ACCESSOR: BatchFormValueAccessor = {
+  provide: NG_VALUE_ACCESSOR,
+  useExisting: forwardRef(() =&gt; BatchFormInputNumberComponent),
+  multi: <span class="hljs-literal">true</span>
+};
+
+@Component({
+  selector: <span class="hljs-string">'app-batch-form-input-number'</span>,
+  templateUrl: <span class="hljs-string">'./batch-form-input-number.component.html'</span>,
+  styleUrls: [
+    <span class="hljs-string">'./batch-form-input-number.component.css'</span>,
+    <span class="hljs-string">'../batch-form.css'</span>
+  ],
+  providers: [BATCH_FORM_VALUE_ACCESSOR]
+})
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> BatchFormInputNumberComponent extends BatchFormWrapper&lt;<span class="hljs-built_in">number</span>&gt; {
+  @Input() id: <span class="hljs-built_in">string</span>;
+  @Input() label: <span class="hljs-built_in">string</span>;
+  @Input() originalValue: <span class="hljs-built_in">number</span>;
+  @Input() viewMode: ViewMode;
+}
+</div></code></pre>
+<p>So in this component file we've got some special things going on.</p>
+<p><code>@Input()</code> parameters. The input parameters give a way to make the form component generic.</p>
+<ol>
+<li>The <code>id</code> parameter is a simple string of the of what the <code>input</code> element's <code>id</code> attribute should be. Letting the user specify this allow the focus to work correctly when clicking on the label text.</li>
+<li>The <code>label</code> parameter is a simple string of what to stuff into the <code>label</code> element to let the user know what data the <code>input</code> is for.</li>
+<li>The <code>originalValue</code> parameter gives the component knownledge of the <code>batchComplete.originalValue.XXX</code> field.</li>
+<li>The <code>viewMode</code> parameter gives a way to know what state the page is in (View, Edit, New).</li>
+</ol>
+<p>You might notice that this component doesn't have anything defined for the <code>ViewMode</code> enum, and doesn't have a property for the <code>value</code> parameter that we are accessing in the template file.  These have been already been refactored in this component to a wrapper class: <code>batch-form/batch-form-wrapper.ts</code>.  The <code>value</code> parameter here is related to the <code>NG_VALUE_ACCESSOR</code> property that we are importing from <code>angular/forms</code>.</p>
+<p>With this wrapper class we are saying that anything that extends it (like our new form component does with: <code>export class BatchFormInputNumberComponent extends BatchFormWrapper&lt;number&gt;</code> line) will also gain the properties and logic contained in it.</p>
+<p>Looking at that file we're extending we see this:</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">import</span> { ControlValueAccessor } from <span class="hljs-string">'@angular/forms'</span>;
+<span class="hljs-keyword">import</span> { InjectionToken, Type } from <span class="hljs-string">'@angular/core'</span>;
+<span class="hljs-keyword">import</span> { ViewMode } from <span class="hljs-string">'../../core/view-mode/view-mode.model'</span>;
+
+<span class="hljs-keyword">const</span> noop = () =&gt; { };
+
+<span class="hljs-comment">/**
+* This class gives easy access to the ControlValueAccessor which allows components/directives that accept two way data binding with ngModel.
+*/</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> BatchFormWrapper&lt;T&gt; <span class="hljs-keyword">implements</span> ControlValueAccessor {
+  innerValue: T;
+  onTouchedCallback: () =&gt; <span class="hljs-built_in">void</span> = noop;
+  onChangeCallback: (_: T) =&gt; <span class="hljs-built_in">void</span> = noop;
+  ViewMode = ViewMode;
+
+  <span class="hljs-keyword">get</span> value(): T {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.innerValue;
+  }
+
+  <span class="hljs-keyword">set</span> value(value: T) {
+    <span class="hljs-keyword">if</span> (value !== <span class="hljs-keyword">this</span>.innerValue) {
+      <span class="hljs-keyword">this</span>.innerValue = value;
+      <span class="hljs-keyword">this</span>.onChangeCallback(value);
+    }
+  }
+
+  <span class="hljs-comment">// Set touched on blur</span>
+  onBlur() {
+    <span class="hljs-keyword">this</span>.onTouchedCallback();
+  }
+
+  <span class="hljs-comment">// Form ControlValueAccessor interface</span>
+  writeValue(value: T) {
+    <span class="hljs-keyword">if</span> (value !== <span class="hljs-keyword">this</span>.innerValue) {
+      <span class="hljs-keyword">this</span>.innerValue = value;
+    }
+  }
+
+  <span class="hljs-comment">// Form ControlValueAccessor interface</span>
+  registerOnChange(fn: <span class="hljs-built_in">any</span>) {
+    <span class="hljs-keyword">this</span>.onChangeCallback = fn;
+  }
+
+  <span class="hljs-comment">// Form ControlValueAccessor interface</span>
+  registerOnTouched(fn: <span class="hljs-built_in">any</span>) {
+    <span class="hljs-keyword">this</span>.onTouchedCallback = fn;
+  }
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> BatchFormValueAccessor {
+  provide: InjectionToken&lt;ControlValueAccessor&gt;;
+  useExisting: Type&lt;<span class="hljs-built_in">any</span>&gt;;
+  multi: <span class="hljs-built_in">boolean</span>;
+}
+</div></code></pre>
+<p>Basically all this is doing is giving us a way to extend the normal <code>[(ngModel)]</code> syntax of interacting with the component.  It also gives us a place to store the <code>ViewMode</code> enum once rather than having to do it in each <code>batch form</code> component.  The NG_VALUE_ACCESSOR can be trickier to work with in some contexts so the other option is to use an <code>@Input()</code> for the value and during the <code>(ngModelChange)</code> in the form component have that hit an event emitter as an <code>@Output</code> parameter and handle it at the parent component level.</p>
+<p>So with this new <code>batch-form</code> component using the existing <code>wrapper</code> class we have a component that abstracts some of the details of working with that type of form control with our <code>Batch Data</code> / <code>Batch Part</code> data.  We can return to our component template and implement a usage of this mini-component as a replacement to our earlier markup.</p>
+<p>(<code>batch-complete.component.html</code>)</p>
+<pre class="hljs"><code><div><span class="hljs-tag">&lt;<span class="hljs-name">app-batch-form-input-number</span> [(<span class="hljs-attr">ngModel</span>)]=<span class="hljs-string">"batchComplete.dirtyData.CompleteAmount"</span> [<span class="hljs-attr">id</span>]=<span class="hljs-string">"'completeAmountInput'"</span> [<span class="hljs-attr">label</span>]=<span class="hljs-string">"'Complete Amount'"</span> [<span class="hljs-attr">originalValue</span>]=<span class="hljs-string">"batchComplete.originalData.CompleteAmount"</span> [<span class="hljs-attr">viewMode</span>]=<span class="hljs-string">"mode"</span> (<span class="hljs-attr">ngModelChange</span>)=<span class="hljs-string">"batchCompleteChange()"</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">app-batch-form-input-number</span>&gt;</span>
+</div></code></pre>
+<p>Here we are interacting with <code>[(ngModel)]</code> in the same way as before thanks to the <code>wrapper</code> class and the <code>NG_Value_Accessor</code>.  We also pass in the values we need to our <code>@Input()</code> parameters.  A <code>@Input()</code> parameter like <code>[originalValue]</code> is passing a property from the component; A parameter like <code>[label]</code> is passing a string value defined here in the template file.  We are also still able to chain into our Local Storage save function with our <code>(ngModelChange)</code> trigger.  (If we the <code>batch-form</code> component doesn't use <code>NG_Value_Accessor</code> we will use a <code>@Output()</code> event emitter to record that change in the components properties and chain into Local Storage save function).</p>
+<p>Now anytime we want to do this style of form element we can just reuse the same mini-component from our <code>batch-form</code> directory.  Other similar components should be stored in the same directory such that they're able to be generic and reused in other <code>batch</code> components.  There will be times when a form control type is specific enough to a single entity that it doesn't need a generic <code>batch-form</code> component and it is fine to leave those as part of the main component.</p>
+<p>At this point we can continue to build out more elements and form fields to meet the requirements for the component in the same fashion as we've done in this past couple of steps.  Once we have a some edit functionality we will want to be able to save the form to the API.</p>
+</li>
+</ol>
+<h5 id="scaffolding-out-the-batch-part-save-logic">Scaffolding out the Batch Part save logic</h5>
+<p>As mentioned in previous sections we will now return to the our <code>Batch Part</code> service and the <code>Batch</code>'s service to implement save functionality.  The <code>Batch</code> module has a global save function.  Triggering the <code>Batch &gt; Save</code> button from the Application Menu will trigger each <code>Batch Part</code>'s save function that has been loaded by the user and is dirty.  This allows a user to make changes across multiple tabs, review them, and then save all their work as a single transaction with the server. To facilitate working with saving a <code>Batch Part</code>'s data even if we aren't on that particular tab we need to rely on our <code>Batch Service</code> (<code>batch/batch.service.ts</code>) and how it will interact with our <code>Batch Part</code>'s service.</p>
+<ol>
+<li>
+<p>To start off we will work with our new <code>Batch Part</code>'s (<code>batch-complete.service.ts</code>)</p>
+<p>It will already have the loading functions and a pristine checking function, but we need to add a function to talk to our API and send updates that way.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> BatchCompleteService {
+...
+
+updateBatchComplete(batchComplete: BatchComplete): Observable&lt;ResponseDetail&gt; {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.http
+    .put(<span class="hljs-string">`<span class="hljs-subst">${environment.webapiRoot}</span>BatchCompletion`</span>, batchComplete)
+    .map((r: Response) =&gt; {
+      <span class="hljs-keyword">return</span> r.json() as ResponseDetail;
+    });
+}
+
+...
+}
+</div></code></pre>
+<p>Our save (<code>put</code>) function will pass our <code>batchComplete</code> object to the API. Notice that at this point we aren't dealing with the <code>BatchData&lt;T&gt;</code>, but just a <code>Batch Part</code> that we've made; the API doesn't care about the <code>BatchData&lt;T&gt;</code> level of detail.  We are also expecting our API to return a <code>ResponseDetail</code> this is a class that can tell us about any errors that happen on the server and let us know any key value that we might need.  We need to be able to know when our save function has completed so we can take an appropriate action after it has completed and inform the user about how it went.</p>
+<p>Like the load function we won't call this save function directly from our component, but rather let the <code>Batch Service</code> facilitate it.</p>
+</li>
+<li>
+<p>With our specific save available we can expand our <code>Batch Service</code> to support it. (<code>batch/batch.service.ts</code>)</p>
+<p>We won't need to add any import statements or local properties since we did that when we updated it for loading our <code>Batch Part</code>, but we can expand the <code>save(...)</code> function for our <code>Batch Part</code>.</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> BatchService {
+  ...
+
+  save(batch: Batch): Observable&lt;<span class="hljs-built_in">any</span>&gt; {
+    <span class="hljs-keyword">let</span> saveObservableArray = [];
+
+    ...
+    <span class="hljs-keyword">if</span>(batch.Complete != <span class="hljs-literal">null</span> &amp;&amp; !<span class="hljs-keyword">this</span>.batchCompleteService.isPristine(batch.Complete)) {
+      saveObservableArray.push(<span class="hljs-keyword">this</span>.batchCompleteService.updateBatchComplete(batch.Complete.dirtyData));
+    }
+    ...
+
+    <span class="hljs-keyword">return</span> Observable.forkJoin(saveObservableArray);
+  }
+
+  ...
+}
+</div></code></pre>
+<p>We are passed the whole <code>Batch</code> object to this function so that each <code>Batch Part</code> can be processed together.</p>
+<p>So by expanding this array we've informed the <code>Batch Service</code> save function how our <code>Batch Part</code> should be saved if it is dirty.  What is happening is that we start the function with an empty array <code>saveObservableArray</code> and we look at each <code>Batch Part</code> to see if it is loaded and dirty.  If so then we will add our save function (passing to the function only the <code>dirtyData</code> of our <code>Batch Part</code>) to the array.  Finally the function is returning an <code>forkJoin Observable</code>.</p>
+<p>ForkJoins work by calling all the Observables in the Array and then waiting until all have been returned before continuing their after execution logic.  We will want to wait for all the <code>Batch Part</code>s to have had a change to save before we decide what actions we want to take.</p>
+<p>This function will be called from our new <code>Batch Part</code>'s component file.</p>
+</li>
+<li>
+<p>Now that the <code>Batch Service</code> save function is ready we can make it accessible from our <code>Batch Part</code>'s component. (<code>batch-complete.component.ts</code>)</p>
+<pre class="hljs"><code><div><span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> BatchCompleteComponent <span class="hljs-keyword">implements</span> OnInit, OnDestroy {
+  ...
+    processMenuEvent(event): <span class="hljs-built_in">void</span> {
+      <span class="hljs-keyword">switch</span> (event) {
+        <span class="hljs-keyword">case</span> <span class="hljs-string">'EDIT'</span>:
+          <span class="hljs-keyword">this</span>.changeViewMode(ViewMode.Edit);
+          <span class="hljs-keyword">break</span>;
+        <span class="hljs-keyword">case</span> <span class="hljs-string">'CANCEL'</span>:
+          <span class="hljs-keyword">this</span>.changeViewMode(ViewMode.View);
+          <span class="hljs-keyword">break</span>;
+        <span class="hljs-keyword">case</span> <span class="hljs-string">'SAVE'</span>:
+          <span class="hljs-comment">// Before we ignored this available action from our Application Menu Events, but now we will implement a function for it.</span>
+          <span class="hljs-keyword">this</span>.save();
+          <span class="hljs-keyword">break</span>;
+      }
+    }
+
+    save(): <span class="hljs-built_in">void</span> {
+      <span class="hljs-keyword">this</span>.batchService.getBatch(<span class="hljs-keyword">this</span>.batchIdentifier, [BatchPart.Complete])
+        .subscribe((batch: Batch) =&gt; {
+          <span class="hljs-keyword">this</span>.batchService.save(batch)
+            .subscribe((batchPartResponseDetails: ResponseDetail[]) =&gt; {
+              <span class="hljs-keyword">let</span> summaryResponseDetail = <span class="hljs-keyword">this</span>.batchService.processResponseDetails(batchPartResponseDetails, <span class="hljs-keyword">this</span>.batchIdentifier);
+              <span class="hljs-comment">// Do something with summary.</span>
+              <span class="hljs-keyword">if</span> (summaryResponseDetail.Success) {
+                <span class="hljs-comment">// Reload the batch data.</span>
+                <span class="hljs-keyword">this</span>.setupBatchComplete();
+                <span class="hljs-keyword">this</span>.changeViewMode(ViewMode.View);
+              } <span class="hljs-keyword">else</span> {
+                <span class="hljs-comment">// Warn user about the issue</span>
+                <span class="hljs-comment">// <span class="hljs-doctag">TODO:</span> BS Modal Popup?</span>
+                alert(summaryResponseDetail.Message);
+              }
+            });
+        });
+    }
+...
+}
+</div></code></pre>
+<p>So our new save function in the component will be triggered by the Application Menu's <code>Save</code> button and then we will store the logic in our <code>save()</code> function.</p>
+<ol>
+<li>The first part of the the function is asking the <code>Batch Service</code> (and Local Storage) for a copy of the <code>Batch</code> as it currently exists.</li>
+</ol>
+<pre class="hljs"><code><div><span class="hljs-keyword">this</span>.batchService.getBatch(<span class="hljs-keyword">this</span>.batchIdentifier, [BatchPart.Complete])
+  .subscribe((batch: Batch) =&gt; {
+    ...
+  });
+</div></code></pre>
+<ol start="2">
+<li>Once that object is returned we can pass it to our save function.</li>
+</ol>
+<pre class="hljs"><code><div><span class="hljs-keyword">this</span>.batchService.save(batch)
+  .subscribe((batchPartResponseDetails: ResponseDetail[]) =&gt; {
+    ...
+  });
+</div></code></pre>
+<p>Since we've set up the new <code>Batch Part</code>'s save function to return a <code>ResponseDetail</code> type and the other <code>Batch Part</code>s have done the same we will get back an Array of their responses from the <code>ForkJoin</code> observable. Hopefully all the saves have been successful.</p>
+<ol start="3">
+<li>
+<p>To check the <code>ResponseDetails</code> a function has already been setup on the <code>Batch Service</code>. It will aggregate their results (basically just a Yes/No if anything went wrong). A side note with the <code>processResponseDetails</code> is it will set the <code>Batch Parts</code> (<code>BatchData&lt;T&gt;</code>) to a state so that the next time they're loaded it is done from the server rather than the Local Storage.</p>
+<ol>
+<li>
+<p>If the summary was successful, great, we can call our <code>setupBatchComplete()</code> function to reload the data from the server. This will make it so the user can see what it looks like on the server now.  We will also pop the user back to <code>View</code> Mode.</p>
+</li>
+<li>
+<p>If the summary wasn't successful, we will want to warn the user that something did not go as expected so that they have a chance to either make changes to the <code>Batch</code> or notify a programmer about a bug.</p>
+</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+<p>At this point we should have been able to save our <code>Batch Part</code> that was loaded from the server or local storage, and edited by the user!  The rest of the work should just be implementation details.</p>
+<hr>
+<h2 id="eparts-sds-services">Eparts SDS Services</h2>
+<ul>
+<li>Programmer contact at Autologue is usually Kyle Bloom (kbloom@autologue.com).</li>
+<li>Michelle Honse is the other IT stakeholder in the application and often mediates between programmers and Autologue / status of the project.</li>
+</ul>
+<p><a href="https://vpidev.kilnhg.com/Code/Repositories/netservice/EpartsSDSSync">Kiln Repository</a></p>
+<h3 id="eparts-sds-uploader">Eparts SDS Uploader</h3>
+<p>See Case 10072.</p>
+<p>This is mostly working. There are a few SDS records that don't get all the data points they need to do a successful upload so it isn't actually attempted (just logged in SaM.Eparts_SDS_Sync).</p>
+<p>There are three modes for this:</p>
+<ol>
+<li>Full Upload: This will grab all SDSs that are current and attempt an upload.</li>
+<li>New Upload: This will compare the current list of SDSs with the SDS upload log (SaM.Eparts_SDS_Sync) entries that are marked as completed.  This way once a SDS is uploaded successfully we won't attempt it again. (This might need some work because during testing they cleared their side and we needed to truncate our logs for this upload to work again).</li>
+<li>Single Upload: This will upload a single SDS based on the GUID given to the app as a parameter.</li>
+</ol>
+<p>This likely could have it's query improved as right now it loads each part of it with different sproc calls, but getting some of the columns together can be tricky as they come from different servers / databases or would require some special query work with either pivots or xml-&gt;csv for the items field.</p>
+<p>We had been working with Michelle Honse recently to get the uploader pointed to Production, so it may still need some tweaking.  As of 1/4/2018 we were still testing.</p>
+<p>Application is deployed to <code>\\TaskServer\c$\DVApps\EpartsSDSSync</code> and is run via the Windows Task Scheduler on that server.</p>
+<h3 id="sds-email-log-download-distribution-log">SDS Email Log (Download Distribution Log)</h3>
+<p>See Case 9748.</p>
+<p>This is to pull down the log of emails sent by the Eparts site.  The Audit works off of a optionally supplied date range. Without the date range it should default to emails within the last week.</p>
+<h3 id="sds-audit">SDS Audit</h3>
+<p>See Case 9747.</p>
+<p>This is to compare versions of SDSs on the Eparts site to the ones we think are current.  If there are SDSs that are out of date we should upload the new version of it.  This is currently a WIP in the solution, just commented out.</p>
+<hr>
+<h2 id="itinfo">ITInfo</h2>
+<p>Primary Contact would be Mike DJ since he is the main stakeholder in the app.  He decides what features should be added, but other IT staff use it too and might have ideas. Ashton has been building some fixes/improvements/feature requests with ITInfo recently.</p>
+<p>Latest requests that Ashton hasn't heard about would be the Service Request List update from Mike on 12/21: Case 10416.
+Otherwise the open cases assigned to him or me are still open.</p>
+<p>Main application case list:
+10416 - New Request from Mike about Service Vendor List query.
+10196 - I know Ashton was in the middle of this before he left for holiday.
+10229 - I think Ashton finished the multi column sorting, not sure if he still has any local changes left.
+10226 - Parent Case with the ITInfo batch 2 changes from Mike.</p>
+<h3 id="service-desk-export">Service Desk Export</h3>
+<p>Primary contact is currently Dean Walhof.</p>
+<p>Related to ITInfo is the Service Desk Export. It is pulling from the same data even though it is actaully a different <a href="https://vpidev.kilnhg.com/Code/Repositories/sqlssis/ServiceDesk">solution/repository</a>.  The latest request from Dean Walholf on 12/20 was with Case 10410 to update how it exported some rows. This requested change would likely just require an altered sproc.</p>
+<hr>
+<h2 id="misc">Misc</h2>
+<h3 id="checkfoxprofilesyncstatus">CheckFoxproFileSyncStatus</h3>
+<p>Task Scheduler:</p>
+<ol>
+<li>Actions &gt; Program/script: <code>Powershell.exe</code></li>
+<li>Action &gt; Add arguments: <code>-noexit -command &quot;&amp; 'c:\Scripts\PS\CheckFoxproFileSyncStatus.ps1' 1&quot;</code></li>
+<li>Triggers &gt; Begin the task: <code>On a schedule</code></li>
+<li>Triggers &gt; Settings: <code>Daily</code> and Recur every: <code>1</code> days</li>
+<li>Triggers &gt; advanced settings &gt; Enabled: <code>checked</code>.</li>
+</ol>
+
+    </body>
+    </html>
