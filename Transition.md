@@ -21,7 +21,7 @@
   - [Misc](#misc)
     - [CheckFoxproFileSyncStatus](#checkfoxprofilesyncstatus)
 
-# Transition 
+# Transition
 
 ## Production Tracking Beta
 
@@ -29,9 +29,9 @@
 
 #### Overview
 
-The idea that we were trying to go for with the batch module was a way to split of all of the parts to a batch to make loading easier.
+The idea that we were trying to go for with the batch module is a way to split of all of the parts to a batch to make loading easier.
 We also wanted to store the loaded batch information locally to make reloading a batch fast and give a chance for limited offline capabilities.
-Storing the batch locally allows changing different batch parts and then committing a save action once for all of them.
+Storing the batch locally allows changing different batch parts and then committing a single save action to save all the parts.
 
 #### Local Storage Batch Design
 
@@ -39,15 +39,15 @@ When a batch is loaded we want to only load the necessary parts of the batch, no
 However, we also want to keep all of the batch parts together in local storage and attached to a single `Batch` object there. This lead to having a `Batch.Order` batch part.
 When the batch is stored the first time it will just be a `Batch` object with the `Batch.Order` property loaded with data.
 Once we move to the `Complete` tab we will load that data and attach it to the `Batch` object on the `Batch.Complete` property. The single `Batch` object will now have two batch parts,
-and this can continue for any number of parts we decide to add to the `Batch`. This gives some amount of modularity to the batch.
+and this can continue for any number of parts we decide to add to the `Batch`. This gives an amount of modularity to the batch.
 
-We store the batch using a single key `PT-Batch-123456`. 
+We store the batch using a single key `PT-Batch-123456`.
 1. The `PT-` signifies that this local storage object should go with `Production Tracking`, this is needed because local storage is shared at a per `Origin` level.
-So basically per sub-domain, and since our sites are one the same origin we need this to keep the apps local storage items together. 
+So basically per sub-domain, and since our sites are one the same origin we need this to keep the apps local storage items together.
 2. The `Batch-` signifies that the object in local storage is a `Batch` type object. We current store other object there too.
 3. The final number string is the identifier for the `MFG.Production_Batch`. The unique key gives a way to keep track of the stored batch. Can't use something that might be temporary like a Lot Number.
 
-When the `Batch` object is loaded and is being consumed by the `Component` we want to also keep track of any changes that occur to the object. 
+When the `Batch` object is loaded and is being consumed by the `Component` we want to also keep track of any changes that occur to the object.
 What we do is any time that a form detects a `(ngModelChange)` we bind that to a function that eventually call the `Batch Service`'s Update Local Storage function. That function will take the Batch or Part
 and store it Local storage. This can happen immediately as it doesn't appear to be a intensive operation even when local storage is almost full.
 
@@ -94,7 +94,7 @@ We need to be able to call all the `Batch Part`s save operations from the `batch
 
 #### Form components
 
-Angular allows us an easy way to make mini components good at one thing.  Because the bindings for Batch form controls can be tricky with the two sets of data (`originalData` and `dirtyData`) having a mini reusable component allows us to get it right once and then not worry about it again.
+Angular allows us an easy way to make mini components good at one thing. Because the bindings for Batch form controls can be tricky with the two sets of data (`originalData` and `dirtyData`) having a mini reusable component allows us to get it right once and then not worry about it again.
 
 #### Guide for new Batch Part and Batch tab
 
@@ -102,7 +102,7 @@ This section will hopefully be useful when setting up new Batch Parts and differ
 
 ##### Component Logic vs Batch Logic
 
-Components will interact with their data in different ways to meet the requirements that the component needs.  All Batch Parts will load and save their data in a similar way however.  These sections will refer to logic in loading or saving a batch part with the global Batch Service as *Batch Part Logic* and logic specific to the current component / implementation details for the component as *Component Logic*.
+Components will interact with their data in different ways to meet the requirements that the component needs. All Batch Parts will load and save their data in a similar way however. These sections will refer to logic in loading or saving a batch part with the global Batch Service as *Batch Part Logic* and logic specific to the current component / implementation details for the component as *Component Logic*.
 
 ##### Required Files for Batch Parts
 
@@ -112,7 +112,7 @@ Files and folder that need to be added / updated for adding the initial *Batch P
 
 1. Component Directory (`batch-complete`)
     1. `batch-complete.component.css` - Should be included during generation, but no Batch Part data is required in this file.
-    2. `batch-complete.component.html` - Should be included during generation, but no Batch Part data is required in this file.  This will eventually have *Component Logic* that interacts with the *Batch Part*, but not required at the outset.
+    2. `batch-complete.component.html` - Should be included during generation, but no Batch Part data is required in this file. This will eventually have *Component Logic* that interacts with the *Batch Part*, but not required at the outset.
     3. `batch-complete.component.ts` - Should be included during generation, and we will be adding *Batch Part Logic* to this file for loading *Batch Parts*.
     4. `batch-complete.model.ts` - This will need to be added manually. This will define the shape of the object we get back from the API and that will be part of the `BatchData` object.
     5. `batch-complete.service.ts` - This will house logic for retrieving or storing the *Batch Part's* data from the API and some related logic. Like all the other services this will need to be manually added the module so it can be provided.
@@ -143,7 +143,7 @@ Once these files have been added we can start fleshing them out.
     }
     ```
 
-    Because the API will return a sub-collection of BatchFillDetails we also define that model in this file. This may not always be the case as it could return a sub-collection of a type already defined in another file.  Since we consider Fill Details a part of the Batch Completion and not a separable entity is why it is defined here.
+    Because the API will return a sub-collection of BatchFillDetails we also define that model in this file. This may not always be the case as it could return a sub-collection of a type already defined in another file. Since we consider Fill Details a part of the Batch Completion and not a separable entity is why it is defined here.
 
 2. Expand the Batch Model and Enum - `batch/batch.model.ts`
 
@@ -164,8 +164,8 @@ Once these files have been added we can start fleshing them out.
     ```
 
     So in this update we add the Batch Part class as an import so we can use that type later.
-    
-    Then we add a property `Complete`, this is how we will access the `Batch Comlete` data.
+
+    Then we add a property `Complete`, this is how we will access the `Batch Complete` data.
     The added `Complete` property is wrapped in another class `BatchData` more on that later, it is a class that gives extra ways to interact with the data for making things like local storage and data status easier and consistent to do later.
 
     Finally we add `this.Complete = null;` to the constructor to make the initial Batch object have a property for the the `Complete` on creation.
@@ -179,7 +179,7 @@ Once these files have been added we can start fleshing them out.
     }
     ```
 
-    The string value `'Complete'` should match the property name `Complete` and the property name should match the field that we added to the `batch` object: `Complete: BatchData<BatchComplete>`.  Adding to this enum makes interacting with the Batch object more consistent and easier to do later.
+    The string value `'Complete'` should match the property name `Complete` and the property name should match the field that we added to the `batch` object: `Complete: BatchData<BatchComplete>`. Adding to this enum makes interacting with the Batch object more consistent and easier to do later.
 
 3. Update our Batch Part's Service (`batch-complete/batch-complete.service.ts`)
 
@@ -225,7 +225,7 @@ Once these files have been added we can start fleshing them out.
 
     So in this block we setup the class's initial imports and make the `http` class available to use.
 
-    Then in the `getBatchDataComplete(...)` function we are making a way to return an observable of the `BatchComplete` data from either the API or from the one that is already known in local storage (more on that part later).  The logic in the method is checking different properties on the `Batch Data` object of type `Batch Complete`.  If the object doesn't exist it will go straight to the API or if the object is *pristine* and *stale*.  Otherwise if it is *dirty* or *fresh* then it will load it in a different manner.  See the Loading Design section.
+    Then in the `getBatchDataComplete(...)` function we are making a way to return an observable of the `BatchComplete` data from either the API or from the one that is already known in local storage (more on that part later). The logic in the method is checking different properties on the `Batch Data` object of type `Batch Complete`. If the object doesn't exist it will go straight to the API or if the object is *pristine* and *stale*. Otherwise if it is *dirty* or *fresh* then it will load it in a different manner. See the Loading Design section.
 
     The reason this loading mechanic is more complex is that we want to keep track of two copies of the data with the `BatchData<T>` design. One being editable `dirtyData` and the other only what is returned by the server `originalData`. See the Local Storage Batch Design section for more detail on these ideas.
 
@@ -242,7 +242,7 @@ Once these files have been added we can start fleshing them out.
     }
     ```
 
-    This function is the default way to load data from the API.  It will setup both copies (`dirtyData` and `originalData`) to what is returned by the server.
+    This function is the default way to load data from the API. It will setup both copies (`dirtyData` and `originalData`) to what is returned by the server.
 
     ```ts
     private partialLoadBatchComplete(batchIdentifier, existingBatchComplete: BatchData<BatchComplete>): Observable<BatchData<BatchComplete>> {
@@ -295,9 +295,9 @@ Once these files have been added we can start fleshing them out.
     }
     ```
 
-    These three functions are a way to load the `Batch Part` in a partial sense.  This will be called if we only want to leave any modifications that the user has made in place, but still refresh the rest of the data.  For a *pristine* field that means both the `dirtyData` and `originalData` copies of that field will be updated. For a *dirty* field that means that only the `originalData` copy of the data will be updated.  The prevents the user from losing their work while still being able to see the latest known values on the server.
+    These three functions are a way to load the `Batch Part` in a partial sense. This will be called if we only want to leave any modifications that the user has made in place, but still refresh the rest of the data. For a *pristine* field that means both the `dirtyData` and `originalData` copies of that field will be updated. For a *dirty* field that means that only the `originalData` copy of the data will be updated. The prevents the user from losing their work while still being able to see the latest known values on the server.
 
-    The final block we need right now is a `isPristine(...)` function.  This function will need to compare each value between the `dirtyData` and `originalData` copies to tell if the value has changed. We cannot rely on the Angular *pristine* value because we are storing it in Local Storage and lose those attributes on storage and retrieval.  One hurdle with the pristine check is that it cannot directly compare sub-collections based on something like the item's index in the array. Instead we need to know the identifier or primary key field so that if there are additions or removals from the array we can compare the correct items against each other.  There may be an option to simplify this by looping through `Object.keys(...)` result, but you need to be able to traverse into sub-collections correctly as well.
+    The final block we need right now is a `isPristine(...)` function. This function will need to compare each value between the `dirtyData` and `originalData` copies to tell if the value has changed. We cannot rely on the Angular *pristine* value because we are storing it in Local Storage and lose those attributes on storage and retrieval. One hurdle with the pristine check is that it cannot directly compare sub-collections based on something like the item's index in the array. Instead we need to know the identifier or primary key field so that if there are additions or removals from the array we can compare the correct items against each other. There may be an option to simplify this by looping through `Object.keys(...)` result, but you need to be able to traverse into sub-collections correctly as well.
 
     ```ts
     isPristine(batchComplete: BatchData<BatchComplete>): boolean {
@@ -331,7 +331,7 @@ Once these files have been added we can start fleshing them out.
     }
     ```
 
-    With the property and types available we can expand the `getBatch(...)` function.  This function will be called by our Component later to get the batch from local storage and setup the observables for the required batch parts (indicated by the second parameter: `batchParts`).
+    With the property and types available we can expand the `getBatch(...)` function. This function will be called by our Component later to get the batch from local storage and setup the observables for the required batch parts (indicated by the second parameter: `batchParts`).
 
     ```ts
     getBatch(...): Observable<Batch> {
@@ -364,7 +364,7 @@ Once these files have been added we can start fleshing them out.
     }
     ```
 
-    With this change the new `Batch Part` will be setup correctly when the batch is requested and asks for that part.  What's going on is that we need to setup the object to an initial state if it hasn't been loaded before. And if it has been loaded before we want to check on its status (pristineness and freshness).
+    With this change the new `Batch Part` will be setup correctly when the batch is requested and asks for that part. What's going on is that we need to setup the object to an initial state if it hasn't been loaded before. And if it has been loaded before we want to check on its status (pristineness and freshness).
 
     This `getBatch(...)` function we updated calls out to another function `setupObs(...)` that we will also need to update to work with our new `Batch Part`.
 
@@ -379,13 +379,13 @@ Once these files have been added we can start fleshing them out.
     }
     ```
 
-    With this we can see it is calling out to the function we created in the `Batch Service` that is in charge of returning the `Batch Part`'s data.  This function will setup the observable to be subscribed to by the Component and store that observable function in the `obs` field of our `BatchData<BatchPart>`.  We don't subscribe to the `obs` at this level because it is an asynchronous action and will instead wait to subscribe to it until we are in the Component for our new `Batch Part`.
-    
-    All the other methods (except the save functions) should be able to work on their own without needing an update for the new `Batch Part`.  The other functions in this class are intended to provide a consistent way to work with the Batch Parts with some utility functions, and functions to ensure storing the `batch` in Local Storage is consistent.
+    With this we can see it is calling out to the function we created in the `Batch Service` that is in charge of returning the `Batch Part`'s data. This function will setup the observable to be subscribed to by the Component and store that observable function in the `obs` field of our `BatchData<BatchPart>`. We don't subscribe to the `obs` at this level because it is an asynchronous action and will instead wait to subscribe to it until we are in the Component for our new `Batch Part`.
+
+    All the other methods (except the save functions) should be able to work on their own without needing an update for the new `Batch Part`. The other functions in this class are intended to provide a consistent way to work with the Batch Parts with some utility functions, and functions to ensure storing the `batch` in Local Storage is consistent.
 
 5. Adding Batch Part Logic to the Component - (`batch-complete/batch-complete.component.ts`)
 
-    Finally we've gotten to the Batch Part's Component file.  This file will house both the *Batch Part Logic* and the *Component Logic*.
+    Finally we've gotten to the Batch Part's Component file. This file will house both the *Batch Part Logic* and the *Component Logic*.
 
     Since we are scaffolding out the *Batch Part Logic* that's where we will start. Unlike many other components these *Batch Part* components won't directly access their respective services. Instead they will interact with the `Batch Service` which will inturn interact with their services. We do this so that the `Batch Service` facilitates consistent access to the service and to local storage.
 
@@ -411,12 +411,12 @@ Once these files have been added we can start fleshing them out.
     export class BatchCompleteComponent implements OnInit, OnDestroy {
       // We need a local property to keep track of the Batch Identifier. The Batch Identifier is a collection of keys and identifiers to access a specific Batch.
       batchIdentifier: BatchIdentifier;
-      // We need a local property of the Batch Part's data that we get back from the Batch Service.  We initialize it here to it is able to be bound to on the first iteration of the Angular life cycle.  It is a BatchData type rather than a simple BatchPart type.
+      // We need a local property of the Batch Part's data that we get back from the Batch Service. We initialize it here to it is able to be bound to on the first iteration of the Angular life cycle. It is a BatchData type rather than a simple BatchPart type.
       batchComplete: BatchData<BatchComplete> = new BatchData<BatchComplete>(new BatchComplete());
-      // We will add more *Component Logic* properties.  This will include things related to the View Mode, lookups, and external buttons like in the Application Navbar Menu.
+      // We will add more *Component Logic* properties. This will include things related to the View Mode, lookups, and external buttons like in the Application Navbar Menu.
       ...
 
-      // For the Batch Part Logic these are the only services that need to be setup.  We will add more services / classes / subscriptions when adding the Component Logic.
+      // For the Batch Part Logic these are the only services that need to be setup. We will add more services / classes / subscriptions when adding the Component Logic.
       constructor(
         private batchService: BatchService,
         private batchIdentifierService: BatchIdentifierService,
@@ -447,7 +447,7 @@ Once these files have been added we can start fleshing them out.
         });
       */
     }
-    
+
     // This function is going to be the main function for loading the Batch Part's data.
     setupBatchComplete(): void {
       this.route.parent.params
@@ -471,7 +471,7 @@ Once these files have been added we can start fleshing them out.
     While `loadData(...)` is pretty straightforward, `setupBatchComplete(...)` has a lot going on inside of it so let's break it down.
 
     The first section:
-    
+
     ```ts
     this.route.parent.params
       .switchMap((params: Params) => {
@@ -479,7 +479,7 @@ Once these files have been added we can start fleshing them out.
       })
     ```
 
-    What's happening is we are looking at the Route Parameters (these are different than Query Parameters).  The Route Parameter of `id` is setup by the `batch-routing.module.ts` when we make the path to all the Batch and Batch Parts.  The format of `batch\<id>\<batch tab>`.  That route param of `id` is then added to the `BatchIdentifierService` function `getBatchID(...)` as the parameter.  The `id` parameter should be a `Lot Number` to access the `Batch` by.  Because we are using a `switchMap(...)` this function (and therefor the following chained functions) will be recalled anytime the `id` parameter changes.
+    What's happening is we are looking at the Route Parameters (these are different than Query Parameters). The Route Parameter of `id` is setup by the `batch-routing.module.ts` when we make the path to all the Batch and Batch Parts. The format of `batch\<id>\<batch tab>`. That route param of `id` is then added to the `BatchIdentifierService` function `getBatchID(...)` as the parameter. The `id` parameter should be a `Lot Number` to access the `Batch` by. Because we are using a `switchMap(...)` this function (and therefor the following chained functions) will be recalled anytime the `id` parameter changes.
 
     The second `.switchMap(...)`:
 
@@ -490,9 +490,9 @@ Once these files have been added we can start fleshing them out.
     })
     ```
 
-    This `switchMap(...)` is receiving a result from the previous `switchMap(...)` of the `BatchIdentifier` object for the given `id`. The returning `BatchIdentifier` object will have a key value on it of `BatchID` which is the comes from the `MFG.Production_Batch.Production_Batch_PK` field.  This and possibly other fields in the `BatchIdentifier` are likely required by the API/DB to access the `Batch Part`'s data that the component will be after.
+    This `switchMap(...)` is receiving a result from the previous `switchMap(...)` of the `BatchIdentifier` object for the given `id`. The returning `BatchIdentifier` object will have a key value on it of `BatchID` which is the comes from the `MFG.Production_Batch.Production_Batch_PK` field. This and possibly other fields in the `BatchIdentifier` are likely required by the API/DB to access the `Batch Part`'s data that the component will be after.
 
-    So with that Identifier now available we will call our `Batch Service`'s `getBatch(...)` function.  This function is one of the ones we expanded earlier to work with the new `Batch Part`.  When we call this funciton we pass the BatchIdentifier (for accessing the API correctly), and we pass an array of `Batch Part`s.  We pass an array because there are times when a component will need to load more than one data `Batch Part`.  For the example we will leave it with a single `Batch Part` what we've just added.  By adding the other Batch Part loading logic to the `Batch Part's Service` we made it easier if this new `Batch Part` needs to be used elsewhere later on too.
+    So with that Identifier now available we will call our `Batch Service`'s `getBatch(...)` function. This function is one of the ones we expanded earlier to work with the new `Batch Part`. When we call this function we pass the BatchIdentifier (for accessing the API correctly), and we pass an array of `Batch Part`s. We pass an array because there are times when a component will need to load more than one data `Batch Part`. For the example we will leave it with a single `Batch Part` what we've just added. By adding the other Batch Part loading logic to the `Batch Part's Service` we made it easier if this new `Batch Part` needs to be used elsewhere later on too.
 
     The `getBatch(...)` function will return the whole `Batch` object, and make sure it is setup to load the desired `Batch Part` we passed in the array (although there might not be any data in our `Batch Part` just yet).
 
@@ -508,10 +508,10 @@ Once these files have been added we can start fleshing them out.
     });
     ```
 
-    In this example our `Batch Part` (`Batch Complete`) is the only batch part that we care about on the `Batch` object we only need to work with it in this area.  We take the `Batch` object that is setup by the previous function, and since in an earlier step we altered the `setupObs(...)` function in the `batch.service.ts` section; we have an `obs` property that will represent the `Batch Part` Service's function `getBatchDataComplete(...)` function.  So when we subscribe to that function now it will determine if we have a *stale* or *fresh*, *pristine* or *dirty* `Batch Part` and will take the appropriate action to return the data either what was existing in the Local Storage `Batch` object, or will call out to the API to get something fresher.  We take what ever the result of the `obs` subscription and store it in our local property `this.batchComplete`.  We now have an object available to be bind our template's data to.
+    In this example our `Batch Part` (`Batch Complete`) is the only batch part that we care about on the `Batch` object we only need to work with it in this area. We take the `Batch` object that is setup by the previous function, and since in an earlier step we altered the `setupObs(...)` function in the `batch.service.ts` section; we have an `obs` property that will represent the `Batch Part` Service's function `getBatchDataComplete(...)` function. So when we subscribe to that function now it will determine if we have a *stale* or *fresh*, *pristine* or *dirty* `Batch Part` and will take the appropriate action to return the data either what was existing in the Local Storage `Batch` object, or will call out to the API to get something fresher. We take what ever the result of the `obs` subscription and store it in our local property `this.batchComplete`. We now have an object available to be bind our template's data to.
 
     The final line `this.batchCompleteChange()` is a method we will call in the component to store our `Batch Part` again in Local Storage (we want to do this if we got new data from the API that needs to be remembered by the application).
-    
+
     We can add that method now. Note if there are more is more than one `Batch Part` that is being worked with in the component then each time that `Batch Part` is changed it should notify it's own version of that function or allow for switching what `Batch Part` type is being updated.
 
     ```ts
@@ -521,16 +521,16 @@ Once these files have been added we can start fleshing them out.
     }
     ...
     ```
-    
-    So this simple function is calling a function that didn't need to be edited on the `Batch Service` that will take the enum of the the `Batch Part` (`BatchPart.Complete`) to know what part is being passed/updated and then the actual local property of `this.batchComplete` will get added to the `Batch` object and stored in Local Storage.  As mentioned in Local Storage Batch Design section this should be chained into by any changes that occur in the `Batch Part`'s Component.
 
-    At this point the `Batch Part`'s data should be available and we can now get into the implementation details for the component.  Once we have some Component Logic we will return to the Batch Part Logic for saving.
+    So this simple function is calling a function that didn't need to be edited on the `Batch Service` that will take the enum of the the `Batch Part` (`BatchPart.Complete`) to know what part is being passed/updated and then the actual local property of `this.batchComplete` will get added to the `Batch` object and stored in Local Storage. As mentioned in Local Storage Batch Design section this should be chained into by any changes that occur in the `Batch Part`'s Component.
+
+    At this point the `Batch Part`'s data should be available and we can now get into the implementation details for the component. Once we have some Component Logic we will return to the Batch Part Logic for saving.
 
 ##### Scaffolding out the Batch Part component specific logic
 
-Now that `Batch Part`'s data is available to be consumed in the client we can get into the implementation details for our new component.  Some of the first things we will do is build an example of how to interact with both set of the data contained in the `BatchData<BatchPart>` that we just created and made available to the component.  We will also look at setting up the form to have different states (view/edit).  Finally look at some details about keeping our Local Storage `Batch` object up to date with changes that occur in the component.
+Now that `Batch Part`'s data is available to be consumed in the client we can get into the implementation details for our new component. Some of the first things we will do is build an example of how to interact with both set of the data contained in the `BatchData<BatchPart>` that we just created and made available to the component. We will also look at setting up the form to have different states (view/edit). Finally look at some details about keeping our Local Storage `Batch` object up to date with changes that occur in the component.
 
-1. We will start out simple with allowing the component to recognize different view states or `ViewMode`s.  The Application Menu (`core/application-menu`) should already have a set of buttons that are available when viewing a `batch` (url = `batch/.../batchPart), but we will have to wire up our component to listen to those events and handle them for our context.
+1. We will start out simple with allowing the component to recognize different view states or `ViewMode`s. The Application Menu (`core/application-menu`) should already have a set of buttons that are available when viewing a `batch` (url = `batch/.../batchPart), but we will have to wire up our component to listen to those events and handle them for our context.
 
     We will continue to expand the component file (`batch-complete.component.ts`)
 
@@ -539,7 +539,7 @@ Now that `Batch Part`'s data is available to be consumed in the client we can ge
     import { ViewMode } from '../../core/view-mode/view-mode.model'; // There is a View Mode enum already available to use.
     import { ApplicationMenuService } from '../../core/application-menu/application-menu.service';
     ...
-    
+
     export class BatchCompleteComponent implements OnInit, OnDestroy {
       ...
       // This is a local property of our imported enum. This enum contains all possible states the page could be in.
@@ -561,14 +561,14 @@ Now that `Batch Part`'s data is available to be consumed in the client we can ge
           this.processMenuEvent(event);
         })
       }
-      
+
       // We won't do anything new to this function.
       ngOnInit() {
         this.loadData();
       }
 
       // But like the ngOnInit() we now need to do an action during the destroy phase
-      ngOnDestory() {
+      ngOnDestroy() {
         // Unsubscribing from the Application Menu prevents a memory leak and prevents the subscription from staying open and listening after it should be gone.
         this.menuSubscription.unsubscribe();
       }
@@ -599,7 +599,7 @@ Now that `Batch Part`'s data is available to be consumed in the client we can ge
 
     At this point we have a functionality to listen to the Application Menu and react to the View Mode changes from buttons available.
 
-2. With the ability to switch between page states we can add some form items to see how the data should be rendered on the page. A simple field in the example `Batch Part`: `Batch Complete` is `CompleteAmount` which is a simple numeric value. Since the value is available in our `this.batchComplete` local property we can start work in the template file: `bacth-complete.component.html`.
+2. With the ability to switch between page states we can add some form items to see how the data should be rendered on the page. A simple field in the example `Batch Part`: `Batch Complete` is `CompleteAmount` which is a simple numeric value. Since the value is available in our `this.batchComplete` local property we can start work in the template file: `batch-complete.component.html`.
 
     While a simple binding like this would suffice to display the value it doesn't really take advantage of the extra work that we've put in to setting up our `Batch Part`'s `Batch Data` typed object. A simple binding like this also doesn't take advantage of our `ViewMode` property to display an editable field.
 
@@ -625,7 +625,7 @@ Now that `Batch Part`'s data is available to be consumed in the client we can ge
 
     Fair amount of stuff going on in that block, but what it gives us is a couple of nice things:
 
-    1. Paragraph or an Input element based on our View Mode. Plain text paragraph elements are easier to read than something like a disabled input during a View Mode.  
+    1. Paragraph or an Input element based on our View Mode. Plain text paragraph elements are easier to read than something like a disabled input during a View Mode.
     2. The Input element is a `type="number"` which will give the browser a spinner option and keep the data value the correct number type.
     3. The element has consistent Bootstrap styling with the rest of the application's forms.
     4. The previous known value for the field is also known.
@@ -637,14 +637,14 @@ Now that `Batch Part`'s data is available to be consumed in the client we can ge
 
     1. The wrapping `<div>` is styled to get a class of `has-warning` if the copies of data are different (*dirty*), and if view mode is not *New* (View Mode of *New* would only have ever have a value in the `dirtyData` copy.)
     2. The next block `<label>` has a `for` property to give a click on the label focus to the Input element, and then the text value of `Complete Amount`.
-        1. Inside that Label we have an optional Icon with a tooltip.  The icon shows with the same rule as the `has-warning` class for the form control, and the tooltip is being bound to the `originalData` copy of data. It's ok to use this field in the template such that the user never has an option to edit the underlying value.
-    3. Next we have an `<input>` tag that only shows during the view modes for *Edit* or *New*.  It binds to the `dirtyData` copy of the field and has a change event trigger to store updated values to our Local Storage object.
+        1. Inside that Label we have an optional Icon with a tooltip. The icon shows with the same rule as the `has-warning` class for the form control, and the tooltip is being bound to the `originalData` copy of data. It's ok to use this field in the template such that the user never has an option to edit the underlying value.
+    3. Next we have an `<input>` tag that only shows during the view modes for *Edit* or *New*. It binds to the `dirtyData` copy of the field and has a change event trigger to store updated values to our Local Storage object.
     4. The final element is the plain text paragraph display of the `dirtyData` this gives a easier way to read the values of the form when the page is in *View* mode.
-    - Side Note: We can see we are using the `enum`: `ViewMode` in the template here. This is why we needed to import it and make a local property copy of the `enum`. 
+    - Side Note: We can see we are using the `enum`: `ViewMode` in the template here. This is why we needed to import it and make a local property copy of the `enum`.
 
-3. In order to get these nice to have those features we have the tradeoff of a relatively complex template markup. Since it is likely that our forms will have several input controls form number values it'd be nice to be able to write this markup quickly and consistently.  We can make a mini-component just for this one bunch of form control elements and house any related logic in that component.  Making a generic version gives us a way to easily update all of them in the future if we have a necessary fix or feature improvement.
+3. In order to get these nice to have those features we have the tradeoff of a relatively complex template markup. Since it is likely that our forms will have several input controls form number values it'd be nice to be able to write this markup quickly and consistently. We can make a mini-component just for this one bunch of form control elements and house any related logic in that component. Making a generic version gives us a way to easily update all of them in the future if we have a necessary fix or feature improvement.
 
-    In the `batch/batch-form` directory we could add a new component `batch-form-input-number` directory and component.  This input template style is unique to the batch module where we have this dual data copies (`BatchData`).  Other simpler forms like in the `metadata` module don't require this added functionality.  If they need components for simpler form controls those would be separate and likely live in the `core` module.
+    In the `batch/batch-form` directory we could add a new component `batch-form-input-number` directory and component. This input template style is unique to the batch module where we have this dual data copies (`BatchData`). Other simpler forms like in the `metadata` module don't require this added functionality. If they need components for simpler form controls those would be separate and likely live in the `core` module.
 
     For our `batch-form-input-number.component.html` template we can make it generic by doing something like this:
 
@@ -658,7 +658,7 @@ Now that `Batch Part`'s data is available to be consumed in the client we can ge
     </div>
     ```
 
-    Data pieces that change are turned into property fields; things like the label's value, the value for the originalData, or the id of the element.  To get these fields populated we need to accept them as `Input` parameters to our component.  To add these we will edit out `batch-form-input-number.component.ts` file.
+    Data pieces that change are turned into property fields; things like the label's value, the value for the originalData, or the id of the element. To get these fields populated we need to accept them as `Input` parameters to our component. To add these we will edit out `batch-form-input-number.component.ts` file.
 
     ```ts
     import { Component, forwardRef, Input } from '@angular/core';
@@ -692,13 +692,13 @@ Now that `Batch Part`'s data is available to be consumed in the client we can ge
     So in this component file we've got some special things going on.
 
     `@Input()` parameters. The input parameters give a way to make the form component generic.
-    
+
     1. The `id` parameter is a simple string of the of what the `input` element's `id` attribute should be. Letting the user specify this allow the focus to work correctly when clicking on the label text.
     2. The `label` parameter is a simple string of what to stuff into the `label` element to let the user know what data the `input` is for.
-    3. The `originalValue` parameter gives the component knownledge of the `batchComplete.originalValue.XXX` field.
+    3. The `originalValue` parameter gives the component knowledge of the `batchComplete.originalValue.XXX` field.
     4. The `viewMode` parameter gives a way to know what state the page is in (View, Edit, New).
 
-    You might notice that this component doesn't have anything defined for the `ViewMode` enum, and doesn't have a property for the `value` parameter that we are accessing in the template file.  These have been already been refactored in this component to a wrapper class: `batch-form/batch-form-wrapper.ts`.  The `value` parameter here is related to the `NG_VALUE_ACCESSOR` property that we are importing from `angular/forms`.
+    You might notice that this component doesn't have anything defined for the `ViewMode` enum, and doesn't have a property for the `value` parameter that we are accessing in the template file. These have been already been refactored in this component to a wrapper class: `batch-form/batch-form-wrapper.ts`. The `value` parameter here is related to the `NG_VALUE_ACCESSOR` property that we are importing from `angular/forms`.
 
     With this wrapper class we are saying that anything that extends it (like our new form component does with: `export class BatchFormInputNumberComponent extends BatchFormWrapper<number>` line) will also gain the properties and logic contained in it.
 
@@ -761,9 +761,9 @@ Now that `Batch Part`'s data is available to be consumed in the client we can ge
     }
     ```
 
-    Basically all this is doing is giving us a way to extend the normal `[(ngModel)]` syntax of interacting with the component.  It also gives us a place to store the `ViewMode` enum once rather than having to do it in each `batch form` component.  The NG_VALUE_ACCESSOR can be trickier to work with in some contexts so the other option is to use an `@Input()` for the value and during the `(ngModelChange)` in the form component have that hit an event emitter as an `@Output` parameter and handle it at the parent component level.
+    Basically all this is doing is giving us a way to extend the normal `[(ngModel)]` syntax of interacting with the component. It also gives us a place to store the `ViewMode` enum once rather than having to do it in each `batch form` component. The NG_VALUE_ACCESSOR can be trickier to work with in some contexts so the other option is to use an `@Input()` for the value and during the `(ngModelChange)` in the form component have that hit an event emitter as an `@Output` parameter and handle it at the parent component level.
 
-    So with this new `batch-form` component using the existing `wrapper` class we have a component that abstracts some of the details of working with that type of form control with our `Batch Data` / `Batch Part` data.  We can return to our component template and implement a usage of this mini-component as a replacement to our earlier markup.
+    So with this new `batch-form` component using the existing `wrapper` class we have a component that abstracts some of the details of working with that type of form control with our `Batch Data` / `Batch Part` data. We can return to our component template and implement a usage of this mini-component as a replacement to our earlier markup.
 
     (`batch-complete.component.html`)
 
@@ -771,15 +771,15 @@ Now that `Batch Part`'s data is available to be consumed in the client we can ge
     <app-batch-form-input-number [(ngModel)]="batchComplete.dirtyData.CompleteAmount" [id]="'completeAmountInput'" [label]="'Complete Amount'" [originalValue]="batchComplete.originalData.CompleteAmount" [viewMode]="mode" (ngModelChange)="batchCompleteChange()"></app-batch-form-input-number>
     ```
 
-    Here we are interacting with `[(ngModel)]` in the same way as before thanks to the `wrapper` class and the `NG_Value_Accessor`.  We also pass in the values we need to our `@Input()` parameters.  A `@Input()` parameter like `[originalValue]` is passing a property from the component; A parameter like `[label]` is passing a string value defined here in the template file.  We are also still able to chain into our Local Storage save function with our `(ngModelChange)` trigger.  (If we the `batch-form` component doesn't use `NG_Value_Accessor` we will use a `@Output()` event emitter to record that change in the components properties and chain into Local Storage save function).
+    Here we are interacting with `[(ngModel)]` in the same way as before thanks to the `wrapper` class and the `NG_Value_Accessor`. We also pass in the values we need to our `@Input()` parameters. A `@Input()` parameter like `[originalValue]` is passing a property from the component; A parameter like `[label]` is passing a string value defined here in the template file. We are also still able to chain into our Local Storage save function with our `(ngModelChange)` trigger. (If we the `batch-form` component doesn't use `NG_Value_Accessor` we will use a `@Output()` event emitter to record that change in the components properties and chain into Local Storage save function).
 
-    Now anytime we want to do this style of form element we can just reuse the same mini-component from our `batch-form` directory.  Other similar components should be stored in the same directory such that they're able to be generic and reused in other `batch` components.  There will be times when a form control type is specific enough to a single entity that it doesn't need a generic `batch-form` component and it is fine to leave those as part of the main component.
+    Now anytime we want to do this style of form element we can just reuse the same mini-component from our `batch-form` directory. Other similar components should be stored in the same directory such that they're able to be generic and reused in other `batch` components. There will be times when a form control type is specific enough to a single entity that it doesn't need a generic `batch-form` component and it is fine to leave those as part of the main component.
 
-    At this point we can continue to build out more elements and form fields to meet the requirements for the component in the same fashion as we've done in this past couple of steps.  Once we have a some edit functionality we will want to be able to save the form to the API.
+    At this point we can continue to build out more elements and form fields to meet the requirements for the component in the same fashion as we've done in this past couple of steps. Once we have a some edit functionality we will want to be able to save the form to the API.
 
 ##### Scaffolding out the Batch Part save logic
 
-As mentioned in previous sections we will now return to the our `Batch Part` service and the `Batch`'s service to implement save functionality.  The `Batch` module has a global save function.  Triggering the `Batch > Save` button from the Application Menu will trigger each `Batch Part`'s save function that has been loaded by the user and is dirty.  This allows a user to make changes across multiple tabs, review them, and then save all their work as a single transaction with the server. To facilitate working with saving a `Batch Part`'s data even if we aren't on that particular tab we need to rely on our `Batch Service` (`batch/batch.service.ts`) and how it will interact with our `Batch Part`'s service.
+As mentioned in previous sections we will now return to the our `Batch Part` service and the `Batch`'s service to implement save functionality. The `Batch` module has a global save function. Triggering the `Batch > Save` button from the Application Menu will trigger each `Batch Part`'s save function that has been loaded by the user and is dirty. This allows a user to make changes across multiple tabs, review them, and then save all their work as a single transaction with the server. To facilitate working with saving a `Batch Part`'s data even if we aren't on that particular tab we need to rely on our `Batch Service` (`batch/batch.service.ts`) and how it will interact with our `Batch Part`'s service.
 
 1. To start off we will work with our new `Batch Part`'s (`batch-complete.service.ts`)
 
@@ -801,13 +801,13 @@ As mentioned in previous sections we will now return to the our `Batch Part` ser
     }
     ```
 
-    Our save (`put`) function will pass our `batchComplete` object to the API. Notice that at this point we aren't dealing with the `BatchData<T>`, but just a `Batch Part` that we've made; the API doesn't care about the `BatchData<T>` level of detail.  We are also expecting our API to return a `ResponseDetail` this is a class that can tell us about any errors that happen on the server and let us know any key value that we might need.  We need to be able to know when our save function has completed so we can take an appropriate action after it has completed and inform the user about how it went.
+    Our save (`put`) function will pass our `batchComplete` object to the API. Notice that at this point we aren't dealing with the `BatchData<T>`, but just a `Batch Part` that we've made; the API doesn't care about the `BatchData<T>` level of detail. We are also expecting our API to return a `ResponseDetail` this is a class that can tell us about any errors that happen on the server and let us know any key value that we might need. We need to be able to know when our save function has completed so we can take an appropriate action after it has completed and inform the user about how it went.
 
     Like the load function we won't call this save function directly from our component, but rather let the `Batch Service` facilitate it.
 
 2. With our specific save available we can expand our `Batch Service` to support it. (`batch/batch.service.ts`)
 
-    We won't need to add any import statements or local properties since we did that when we updated it for loading our `Batch Part`, but we can expand the `save(...)` function for our `Batch Part`. 
+    We won't need to add any import statements or local properties since we did that when we updated it for loading our `Batch Part`, but we can expand the `save(...)` function for our `Batch Part`.
 
     ```ts
     export class BatchService {
@@ -831,9 +831,9 @@ As mentioned in previous sections we will now return to the our `Batch Part` ser
 
     We are passed the whole `Batch` object to this function so that each `Batch Part` can be processed together.
 
-    So by expanding this array we've informed the `Batch Service` save function how our `Batch Part` should be saved if it is dirty.  What is happening is that we start the function with an empty array `saveObservableArray` and we look at each `Batch Part` to see if it is loaded and dirty.  If so then we will add our save function (passing to the function only the `dirtyData` of our `Batch Part`) to the array.  Finally the function is returning an `forkJoin Observable`.
+    So by expanding this array we've informed the `Batch Service` save function how our `Batch Part` should be saved if it is dirty. What is happening is that we start the function with an empty array `saveObservableArray` and we look at each `Batch Part` to see if it is loaded and dirty. If so then we will add our save function (passing to the function only the `dirtyData` of our `Batch Part`) to the array. Finally the function is returning an `forkJoin Observable`.
 
-    ForkJoins work by calling all the Observables in the Array and then waiting until all have been returned before continuing their after execution logic.  We will want to wait for all the `Batch Part`s to have had a change to save before we decide what actions we want to take.
+    ForkJoins work by calling all the Observables in the Array and then waiting until all have been returned before continuing their after execution logic. We will want to wait for all the `Batch Part`s to have had a change to save before we decide what actions we want to take.
 
     This function will be called from our new `Batch Part`'s component file.
 
@@ -880,8 +880,8 @@ As mentioned in previous sections we will now return to the our `Batch Part` ser
     }
     ```
 
-    So our new save function in the component will be triggered by the Application Menu's `Save` button and then we will store the logic in our `save()` function.  
-    
+    So our new save function in the component will be triggered by the Application Menu's `Save` button and then we will store the logic in our `save()` function.
+
     1. The first part of the the function is asking the `Batch Service` (and Local Storage) for a copy of the `Batch` as it currently exists.
 
     ```ts
@@ -903,8 +903,8 @@ As mentioned in previous sections we will now return to the our `Batch Part` ser
     Since we've set up the new `Batch Part`'s save function to return a `ResponseDetail` type and the other `Batch Part`s have done the same we will get back an Array of their responses from the `ForkJoin` observable. Hopefully all the saves have been successful.
 
     3. To check the `ResponseDetails` a function has already been setup on the `Batch Service`. It will aggregate their results (basically just a Yes/No if anything went wrong). A side note with the `processResponseDetails` is it will set the `Batch Parts` (`BatchData<T>`) to a state so that the next time they're loaded it is done from the server rather than the Local Storage.
-        
-        1. If the summary was successful, great, we can call our `setupBatchComplete()` function to reload the data from the server. This will make it so the user can see what it looks like on the server now.  We will also pop the user back to `View` Mode.
+
+        1. If the summary was successful, great, we can call our `setupBatchComplete()` function to reload the data from the server. This will make it so the user can see what it looks like on the server now. We will also pop the user back to `View` Mode.
 
         2. If the summary wasn't successful, we will want to warn the user that something did not go as expected so that they have a chance to either make changes to the `Batch` or notify a programmer about a bug.
 
@@ -927,12 +927,12 @@ This is mostly working. There are a few SDS records that don't get all the data 
 
 There are three modes for this:
 1. Full Upload: This will grab all SDSs that are current and attempt an upload.
-2. New Upload: This will compare the current list of SDSs with the SDS upload log (SaM.Eparts_SDS_Sync) entries that are marked as completed.  This way once a SDS is uploaded successfully we won't attempt it again. (This might need some work because during testing they cleared their side and we needed to truncate our logs for this upload to work again).
+2. New Upload: This will compare the current list of SDSs with the SDS upload log (SaM.Eparts_SDS_Sync) entries that are marked as completed. This way once a SDS is uploaded successfully we won't attempt it again. (This might need some work because during testing they cleared their side and we needed to truncate our logs for this upload to work again).
 3. Single Upload: This will upload a single SDS based on the GUID given to the app as a parameter.
 
-This likely could have it's query improved as right now it loads each part of it with different sproc calls, but getting some of the columns together can be tricky as they come from different servers / databases or would require some special query work with either pivots or xml->csv for the items field.
+This likely could have it's query improved as right now it loads each part of it with different stored procedure calls, but getting some of the columns together can be tricky as they come from different servers / databases or would require some special query work with either pivots or xml->csv for the items field.
 
-We had been working with Michelle Honse recently to get the uploader pointed to Production, so it may still need some tweaking.  As of 1/4/2018 we were still testing.
+We had been working with Michelle Honse recently to get the uploader pointed to Production, so it may still need some tweaking. As of 1/4/2018 we were still testing.
 
 Application is deployed to `\\TaskServer\c$\DVApps\EpartsSDSSync` and is run via the Windows Task Scheduler on that server.
 
@@ -940,19 +940,19 @@ Application is deployed to `\\TaskServer\c$\DVApps\EpartsSDSSync` and is run via
 
 See Case 9748.
 
-This is to pull down the log of emails sent by the Eparts site.  The Audit works off of a optionally supplied date range. Without the date range it should default to emails within the last week.
+This is to pull down the log of emails sent by the Eparts site. The Audit works off of a optionally supplied date range. Without the date range it should default to emails within the last week.
 
 ### SDS Audit
 
 See Case 9747.
 
-This is to compare versions of SDSs on the Eparts site to the ones we think are current.  If there are SDSs that are out of date we should upload the new version of it.  This is currently a WIP in the solution, just commented out.
+This is to compare versions of SDSs on the Eparts site to the ones we think are current. If there are SDSs that are out of date we should upload the new version of it. This is currently a WIP in the solution, just commented out.
 
 ---
 
 ## ITInfo
 
-Primary Contact would be Mike DJ since he is the main stakeholder in the app.  He decides what features should be added, but other IT staff use it too and might have ideas. Ashton has been building some fixes/improvements/feature requests with ITInfo recently.
+Primary Contact would be Mike DJ since he is the main stakeholder in the app. He decides what features should be added, but other IT staff use it too and might have ideas. Ashton has been building some fixes/improvements/feature requests with ITInfo recently.
 
 Latest requests that Ashton hasn't heard about would be the Service Request List update from Mike on 12/21: Case 10416.
 Otherwise the open cases assigned to him or me are still open.
@@ -967,7 +967,7 @@ Main application case list:
 
 Primary contact is currently Dean Walhof.
 
-Related to ITInfo is the Service Desk Export. It is pulling from the same data even though it is actaully a different [solution/repository](https://vpidev.kilnhg.com/Code/Repositories/sqlssis/ServiceDesk).  The latest request from Dean Walholf on 12/20 was with Case 10410 to update how it exported some rows. This requested change would likely just require an altered sproc.
+Related to ITInfo is the Service Desk Export. It is pulling from the same data even though it is actually a different [solution/repository](https://vpidev.kilnhg.com/Code/Repositories/sqlssis/ServiceDesk). The latest request from Dean Walholf on 12/20 was with Case 10410 to update how it exported some rows. This requested change would likely just require an altered stored procedure.
 
 ---
 
