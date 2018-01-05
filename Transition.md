@@ -1,40 +1,42 @@
 ﻿- [Transition](#transition)
-  - [Production Tracking Beta](#production-tracking-beta)
-    - [Batch Module](#batch-module)
-      - [Overview](#overview)
-      - [Local Storage Batch Design](#local-storage-batch-design)
-      - [Loading Design](#loading-design)
-      - [Saving Design](#saving-design)
-      - [Form components](#form-components)
-      - [Guide for new Batch Part and Batch tab](#guide-for-new-batch-part-and-batch-tab)
-        - [Component Logic vs Batch Logic](#component-logic-vs-batch-logic)
-        - [Required Files for Batch Parts](#required-files-for-batch-parts)
-        - [Scaffolding out the Batch Part files](#scaffolding-out-the-batch-part-files)
-        - [Scaffolding out the Batch Part component specific logic](#scaffolding-out-the-batch-part-component-specific-logic)
-        - [Scaffolding out the Batch Part save logic](#scaffolding-out-the-batch-part-save-logic)
-  - [Eparts SDS Services](#eparts-sds-services)
-    - [Eparts SDS Uploader](#eparts-sds-uploader)
-    - [SDS Email Log (Download Distribution Log)](#sds-email-log-download-distribution-log)
-    - [SDS Audit](#sds-audit)
-  - [ITInfo](#itinfo)
-    - [Service Desk Export](#service-desk-export)
-  - [Misc](#misc)
-    - [CheckFoxproFileSyncStatus](#checkfoxprofilesyncstatus)
-    - [Sproc Object Mapper](#sproc-object-mapper)
+- [Production Tracking Beta](#production-tracking-beta)
+  - [Batch Module](#batch-module)
+    - [Overview](#overview)
+    - [Local Storage Batch Design](#local-storage-batch-design)
+    - [Loading Design](#loading-design)
+    - [Saving Design](#saving-design)
+    - [Form components](#form-components)
+    - [Guide for new Batch Part and Batch tab](#guide-for-new-batch-part-and-batch-tab)
+      - [Component Logic vs Batch Logic](#component-logic-vs-batch-logic)
+      - [Required Files for Batch Parts](#required-files-for-batch-parts)
+      - [Scaffolding out the Batch Part files](#scaffolding-out-the-batch-part-files)
+      - [Scaffolding out the Batch Part component specific logic](#scaffolding-out-the-batch-part-component-specific-logic)
+      - [Scaffolding out the Batch Part save logic](#scaffolding-out-the-batch-part-save-logic)
+- [Eparts SDS Services](#eparts-sds-services)
+  - [Eparts SDS Uploader](#eparts-sds-uploader)
+  - [SDS Email Log (Download Distribution Log)](#sds-email-log-download-distribution-log)
+  - [SDS Audit](#sds-audit)
+- [ITInfo](#itinfo)
+  - [Service Desk Export](#service-desk-export)
+- [Misc](#misc)
+  - [CheckFoxproFileSyncStatus](#checkfoxprofilesyncstatus)
+  - [Sproc Object Mapper](#sproc-object-mapper)
 
+---
 # Transition
+---
 
-## Production Tracking Beta
+# Production Tracking Beta
 
-### Batch Module
+## Batch Module
 
-#### Overview
+### Overview
 
 The idea that we were trying to go for with the batch module is a way to split of all of the parts to a batch to make loading easier.
 We also wanted to store the loaded batch information locally to make reloading a batch fast and give a chance for limited offline capabilities.
 Storing the batch locally allows changing different batch parts and then committing a single save action to save all the parts.
 
-#### Local Storage Batch Design
+### Local Storage Batch Design
 
 When a batch is loaded we want to only load the necessary parts of the batch, not the whole thing. For example when we load the `Order` tab we want to only load the data related to that tab.
 However, we also want to keep all of the batch parts together in local storage and attached to a single `Batch` object there. This lead to having a `Batch.Order` batch part.
@@ -65,7 +67,7 @@ When local storage is full this is used to determine what items can be purged to
 Each `Batch Part` also has a `dateLoaded` property and similar to the `lastTouched` it indicates when the last time the `Batch Part` was loaded.
 This is used however to determine if the `Batch Part` should be loaded from Local Storage or reloaded from the API.
 
-#### Loading Design
+### Loading Design
 
 A `Batch` and `Batch Part` can be loaded in a couple of different ways.
 
@@ -83,7 +85,7 @@ For the `Batch Order` the obs will look like this:
  *Pristine* field will have both copies of the data updated. This allows the user to keep things that they've edited there, but also updated the data to show what is currently known on the server.
 6. If the local storage `Batch` object does not exist then it can be loaded from the server normally.
 
-#### Saving Design
+### Saving Design
 
 The saving for a `Batch` is intended to be a single action that can cover multiple `Batch Part`.
 The `batch.service.ts -> save(...)` is the main driver of the operation.
@@ -93,19 +95,19 @@ When the main observable is ready all the sub parts are subscribed to and trigge
 When they all complete it will determine if there any of the parts had issues and report that to the user, otherwise it will reload the data from the server to make sure everything is fresh after the save.
 We need to be able to call all the `Batch Part`s save operations from the `batch.service.ts` from any component because a `Batch Part` could be changed, then the user might reload the page and come back to another `Batch Part` and save both.
 
-#### Form components
+### Form components
 
 Angular allows us an easy way to make mini components good at one thing. Because the bindings for Batch form controls can be tricky with the two sets of data (`originalData` and `dirtyData`) having a mini reusable component allows us to get it right once and then not worry about it again.
 
-#### Guide for new Batch Part and Batch tab
+### Guide for new Batch Part and Batch tab
 
 This section will hopefully be useful when setting up new Batch Parts and different tabs in the Batch Module.
 
-##### Component Logic vs Batch Logic
+#### Component Logic vs Batch Logic
 
 Components will interact with their data in different ways to meet the requirements that the component needs. All Batch Parts will load and save their data in a similar way however. These sections will refer to logic in loading or saving a batch part with the global Batch Service as *Batch Part Logic* and logic specific to the current component / implementation details for the component as *Component Logic*.
 
-##### Required Files for Batch Parts
+#### Required Files for Batch Parts
 
 For this example I'll use Batch Complete as existing code to follow.
 
@@ -123,7 +125,7 @@ Files and folder that need to be added / updated for adding the initial *Batch P
 3. Batch Navigation Directory (`batch-navigation`)
     1. `batch-navigation.mock.ts` - We will add or update a record in this file when adding a new tab to the Batch Module.
 
-##### Scaffolding out the Batch Part files
+#### Scaffolding out the Batch Part files
 
 Once these files have been added we can start fleshing them out.
 
@@ -531,7 +533,7 @@ Once these files have been added we can start fleshing them out.
 
     At this point the `Batch Part`'s data should be available and we can now get into the implementation details for the component. Once we have some Component Logic we will return to the Batch Part Logic for saving.
 
-##### Scaffolding out the Batch Part component specific logic
+#### Scaffolding out the Batch Part component specific logic
 
 Now that `Batch Part`'s data is available to be consumed in the client we can get into the implementation details for our new component. Some of the first things we will do is build an example of how to interact with both set of the data contained in the `BatchData<BatchPart>` that we just created and made available to the component. We will also look at setting up the form to have different states (view/edit). Finally look at some details about keeping our Local Storage `Batch` object up to date with changes that occur in the component.
 
@@ -782,7 +784,7 @@ Now that `Batch Part`'s data is available to be consumed in the client we can ge
 
     At this point we can continue to build out more elements and form fields to meet the requirements for the component in the same fashion as we've done in this past couple of steps. Once we have a some edit functionality we will want to be able to save the form to the API.
 
-##### Scaffolding out the Batch Part save logic
+#### Scaffolding out the Batch Part save logic
 
 As mentioned in previous sections we will now return to the our `Batch Part` service and the `Batch`'s service to implement save functionality. The `Batch` module has a global save function. Triggering the `Batch > Save` button from the Application Menu will trigger each `Batch Part`'s save function that has been loaded by the user and is dirty. This allows a user to make changes across multiple tabs, review them, and then save all their work as a single transaction with the server. To facilitate working with saving a `Batch Part`'s data even if we aren't on that particular tab we need to rely on our `Batch Service` (`batch/batch.service.ts`) and how it will interact with our `Batch Part`'s service.
 
@@ -917,14 +919,14 @@ At this point we should have been able to save our `Batch Part` that was loaded 
 
 ---
 
-## Eparts SDS Services
+# Eparts SDS Services
 
 - Programmer contact at Autologue is usually Kyle Bloom (kbloom@autologue.com).
 - Michelle Honse is the other IT stakeholder in the application and often mediates between programmers and Autologue / status of the project.
 
 [Kiln Repository](https://vpidev.kilnhg.com/Code/Repositories/netservice/EpartsSDSSync)
 
-### Eparts SDS Uploader
+## Eparts SDS Uploader
 
 See Case 10072.
 
@@ -941,13 +943,13 @@ We had been working with Michelle Honse recently to get the uploader pointed to 
 
 Application is deployed to `\\TaskServer\c$\DVApps\EpartsSDSSync` and is run via the Windows Task Scheduler on that server.
 
-### SDS Email Log (Download Distribution Log)
+## SDS Email Log (Download Distribution Log)
 
 See Case 9748.
 
 This is to pull down the log of emails sent by the Eparts site. The Audit works off of a optionally supplied date range. Without the date range it should default to emails within the last week.
 
-### SDS Audit
+## SDS Audit
 
 See Case 9747.
 
@@ -955,7 +957,7 @@ This is to compare versions of SDSs on the Eparts site to the ones we think are 
 
 ---
 
-## ITInfo
+# ITInfo
 
 Primary Contact would be Mike DJ since he is the main stakeholder in the app. He decides what features should be added, but other IT staff use it too and might have ideas. Ashton has been building some fixes/improvements/feature requests with ITInfo recently.
 
@@ -968,7 +970,7 @@ Main application case list:
 10229 - I think Ashton finished the multi column sorting, not sure if he still has any local changes left.
 10226 - Parent Case with the ITInfo batch 2 changes from Mike.
 
-### Service Desk Export
+## Service Desk Export
 
 Primary contact is currently Dean Walhof.
 
@@ -976,9 +978,9 @@ Related to ITInfo is the Service Desk Export. It is pulling from the same data e
 
 ---
 
-## Misc
+# Misc
 
-### CheckFoxproFileSyncStatus
+## CheckFoxproFileSyncStatus
 
 Task Scheduler:
 1. Actions > Program/script: `Powershell.exe`
@@ -987,7 +989,7 @@ Task Scheduler:
 1. Triggers > Settings: `Daily` and Recur every: `1` days
 1. Triggers > advanced settings > Enabled: `checked`.
 
-### Sproc Object Mapper
+## Sproc Object Mapper
 
 This is a file that I made to take a stored procedure and scaffold out some commonly used things with the results it gets.
 
