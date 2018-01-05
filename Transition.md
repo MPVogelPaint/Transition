@@ -20,6 +20,7 @@
     - [Service Desk Export](#service-desk-export)
   - [Misc](#misc)
     - [CheckFoxproFileSyncStatus](#checkfoxprofilesyncstatus)
+    - [Sproc Object Mapper](#sproc-object-mapper)
 
 # Transition
 
@@ -971,7 +972,7 @@ Main application case list:
 
 Primary contact is currently Dean Walhof.
 
-Related to ITInfo is the Service Desk Export. It is pulling from the same data even though it is actually a different [solution/repository](https://vpidev.kilnhg.com/Code/Repositories/sqlssis/ServiceDesk). The latest request from Dean Walholf on 12/20 was with Case 10410 to update how it exported some rows. This requested change would likely just require an altered stored procedure.
+Related to ITInfo is the Service Desk Export. It is pulling from the same data even though it is actually a different [Kiln Repository](https://vpidev.kilnhg.com/Code/Repositories/sqlssis/ServiceDesk). The latest request from Dean Walholf on 12/20 was with Case 10410 to update how it exported some rows. This requested change would likely just require an altered stored procedure.
 
 ---
 
@@ -985,3 +986,287 @@ Task Scheduler:
 1. Triggers > Begin the task: `On a schedule`
 1. Triggers > Settings: `Daily` and Recur every: `1` days
 1. Triggers > advanced settings > Enabled: `checked`.
+
+### Sproc Object Mapper
+
+This is a file that I made to take a stored procedure and scaffold out some commonly used things with the results it gets.
+
+This requires can only be run against an instance of SQL Server 2012 or newer.
+
+All you need to do it plug in the stored procedure name that you're interested in getting the results from.
+
+The script has got serious room for improvement, but just been adding to it for a long time.
+
+Results:
+
+Column|Usage
+:--|:--
+DB Model Class | This will be the initial scaffolding for the database model class in the .NET Business Project.
+C# Model Class | This will be the initial scaffolding for the api model class in the .NET Business Project. (This might need to be expanded if the class should have sub-collection items or something determined at the server.)
+Mapper Bindings | This is the initial Tiny Mapper binding between the DB Model Class and the C# Model Class bindings.
+Angular Model class (wip) | This is a class that should match the C# Model class, but have it changed to use the types available to Typescript instead of C#.
+CTOR Params | This is for an Angular model class if it has a constructor. This is the optional parameter list.
+CTOR Body | This is for an Angular model class if it has parameters then these would be the default bindings.
+isPristine | This is a default `isPristine(...)` comparison for models in the `Batch` module.
+
+Not guaranteed to be perfect, but just a starting point.
+
+```sql
+USE ENTERPRISE
+GO
+
+DECLARE @SprocName NVARCHAR(128) = 'MFG.Batch_Type_List'
+
+SELECT 'public '+( CASE
+				   --TODO: Filestream and XML types not supported
+					   WHEN system_type_name = 'bit'
+					   THEN 'bool'
+					   WHEN system_type_name = 'tinyint'
+					   THEN 'byte'
+					   WHEN system_type_name = 'binary'
+							OR system_type_name = 'image'
+							OR system_type_name = 'rowversion'
+							OR system_type_name = 'timestamp'
+							OR system_type_name LIKE 'varbinary%'
+					   THEN 'byte[]'
+					   WHEN system_type_name = 'date'
+							OR system_type_name = 'datetime'
+							OR system_type_name LIKE 'datetime2%'
+							OR system_type_name = 'smalldatetime'
+					   THEN 'DateTime'
+					   WHEN system_type_name = 'datetimeoffset'
+					   THEN 'DateTimeOffset'
+					   WHEN system_type_name LIKE 'decimal%'
+							OR system_type_name = 'money'
+							OR system_type_name LIKE 'numeric%'
+							OR system_type_name = 'smallmoney'
+					   THEN 'decimal'
+					   WHEN system_type_name LIKE 'float%'
+					   THEN 'double'
+					   WHEN system_type_name = 'uniqueidentifier'
+					   THEN 'Guid'
+					   WHEN system_type_name = 'smallint'
+					   THEN 'Int16'
+					   WHEN system_type_name = 'int'
+					   THEN 'int'
+					   WHEN system_type_name = 'bigint'
+					   THEN 'Int64'
+					   WHEN system_type_name = 'sql_variant'
+					   THEN 'Object'
+					   WHEN system_type_name = 'real'
+					   THEN 'Single'
+					   WHEN system_type_name LIKE 'char%'
+							OR system_type_name LIKE 'nchar%'
+							OR system_type_name = 'ntext'
+							OR system_type_name LIKE 'nvarchar%'
+							OR system_type_name = 'text'
+							OR system_type_name LIKE 'varchar%'
+					   THEN 'string'
+					   WHEN system_type_name = 'time'
+					   THEN 'TimeSpan'
+					   WHEN system_type_name = 'xml'
+					   THEN 'Xml'
+				   END )+( CASE
+							   WHEN is_nullable = 1
+									AND ( system_type_name = 'bit'
+										  OR system_type_name = 'tinyint'
+										  OR system_type_name = 'date'
+										  OR system_type_name = 'datetime'
+										  OR system_type_name LIKE 'datetime2%'
+										  OR system_type_name = 'smalldatetime'
+										  OR system_type_name = 'datetimeoffset'
+										  OR system_type_name LIKE 'decimal%'
+										  OR system_type_name = 'money'
+										  OR system_type_name LIKE 'numeric%'
+										  OR system_type_name = 'smallmoney'
+										  OR system_type_name LIKE 'float%'
+										  OR system_type_name = 'uniqueidentifier'
+										  OR system_type_name = 'smallint'
+										  OR system_type_name = 'int'
+										  OR system_type_name = 'bigint'
+										  OR system_type_name = 'real'
+										  OR system_type_name = 'time' )
+							   THEN '?'
+							   ELSE ''
+						   END )+' '+name+' { get; set; }' AS 'DB Model Class',
+	   'public '+( CASE
+				   --TODO: Filestream and XML types not supported
+					   WHEN system_type_name = 'bit'
+					   THEN 'bool'
+					   WHEN system_type_name = 'tinyint'
+					   THEN 'byte'
+					   WHEN system_type_name = 'binary'
+							OR system_type_name = 'image'
+							OR system_type_name = 'rowversion'
+							OR system_type_name = 'timestamp'
+							OR system_type_name LIKE 'varbinary%'
+					   THEN 'byte[]'
+					   WHEN system_type_name = 'date'
+							OR system_type_name = 'datetime'
+							OR system_type_name LIKE 'datetime2%'
+							OR system_type_name = 'smalldatetime'
+					   THEN 'DateTime'
+					   WHEN system_type_name = 'datetimeoffset'
+					   THEN 'DateTimeOffset'
+					   WHEN system_type_name LIKE 'decimal%'
+							OR system_type_name = 'money'
+							OR system_type_name LIKE 'numeric%'
+							OR system_type_name = 'smallmoney'
+					   THEN 'decimal'
+					   WHEN system_type_name LIKE 'float%'
+					   THEN 'double'
+					   WHEN system_type_name = 'uniqueidentifier'
+					   THEN 'Guid'
+					   WHEN system_type_name = 'smallint'
+					   THEN 'Int16'
+					   WHEN system_type_name = 'int'
+					   THEN 'int'
+					   WHEN system_type_name = 'bigint'
+					   THEN 'Int64'
+					   WHEN system_type_name = 'sql_variant'
+					   THEN 'Object'
+					   WHEN system_type_name = 'real'
+					   THEN 'Single'
+					   WHEN system_type_name LIKE 'char%'
+							OR system_type_name LIKE 'nchar%'
+							OR system_type_name = 'ntext'
+							OR system_type_name LIKE 'nvarchar%'
+							OR system_type_name = 'text'
+							OR system_type_name LIKE 'varchar%'
+					   THEN 'string'
+					   WHEN system_type_name = 'time'
+					   THEN 'TimeSpan'
+					   WHEN system_type_name = 'xml'
+					   THEN 'Xml'
+				   END )+( CASE
+							   WHEN is_nullable = 1
+									AND ( system_type_name = 'bit'
+										  OR system_type_name = 'tinyint'
+										  OR system_type_name = 'date'
+										  OR system_type_name = 'datetime'
+										  OR system_type_name LIKE 'datetime2%'
+										  OR system_type_name = 'smalldatetime'
+										  OR system_type_name = 'datetimeoffset'
+										  OR system_type_name LIKE 'decimal%'
+										  OR system_type_name = 'money'
+										  OR system_type_name LIKE 'numeric%'
+										  OR system_type_name = 'smallmoney'
+										  OR system_type_name LIKE 'float%'
+										  OR system_type_name = 'uniqueidentifier'
+										  OR system_type_name = 'smallint'
+										  OR system_type_name = 'int'
+										  OR system_type_name = 'bigint'
+										  OR system_type_name = 'real'
+										  OR system_type_name = 'time' )
+							   THEN '?'
+							   ELSE ''
+						   END )+' '+REPLACE(REPLACE(REPLACE(REPLACE(name, '_FK', 'ID'), '_PK', 'ID'), '_XK', 'ID'), '_', '')+' { get; set; }' AS 'C# Model Class',
+	   'config.Bind(source => source.'+name+', target => target.'+REPLACE(REPLACE(REPLACE(REPLACE(name, '_FK', 'ID'), '_PK', 'ID'), '_XK', 'ID'), '_', '')+');' AS 'Mapper Bindings',
+	   REPLACE(REPLACE(REPLACE(REPLACE(name, '_FK', 'ID'), '_PK', 'ID'), '_XK', 'ID'), '_', '')+': '+( CASE
+																									   --TODO: Filestream and XML types not supported
+																										   WHEN system_type_name = 'bit'
+																										   THEN 'boolean'
+																										   WHEN system_type_name = 'tinyint'
+																										   THEN 'any'
+																										   WHEN system_type_name = 'binary'
+																												OR system_type_name = 'image'
+																												OR system_type_name = 'rowversion'
+																												OR system_type_name = 'timestamp'
+																												OR system_type_name LIKE 'varbinary%'
+																										   THEN 'any'
+																										   WHEN system_type_name = 'date'
+																												OR system_type_name = 'datetime'
+																												OR system_type_name LIKE 'datetime2%'
+																												OR system_type_name = 'smalldatetime'
+																										   THEN 'Date'
+																										   WHEN system_type_name = 'datetimeoffset'
+																										   THEN 'any'
+																										   WHEN system_type_name LIKE 'decimal%'
+																												OR system_type_name = 'money'
+																												OR system_type_name LIKE 'numeric%'
+																												OR system_type_name = 'smallmoney'
+																										   THEN 'number'
+																										   WHEN system_type_name LIKE 'float%'
+																										   THEN 'number'
+																										   WHEN system_type_name = 'uniqueidentifier'
+																										   THEN 'any'
+																										   WHEN system_type_name = 'smallint'
+																										   THEN 'number'
+																										   WHEN system_type_name = 'int'
+																										   THEN 'number'
+																										   WHEN system_type_name = 'bigint'
+																										   THEN 'number'
+																										   WHEN system_type_name = 'sql_variant'
+																										   THEN 'any'
+																										   WHEN system_type_name = 'real'
+																										   THEN 'any'
+																										   WHEN system_type_name LIKE 'char%'
+																												OR system_type_name LIKE 'nchar%'
+																												OR system_type_name = 'ntext'
+																												OR system_type_name LIKE 'nvarchar%'
+																												OR system_type_name = 'text'
+																												OR system_type_name LIKE 'varchar%'
+																										   THEN 'string'
+																										   WHEN system_type_name = 'time'
+																										   THEN 'any'
+																										   WHEN system_type_name = 'xml'
+																										   THEN 'any'
+																									   END )+';' AS 'Angular Model class (wip)',
+																									   REPLACE(REPLACE(REPLACE(REPLACE(name, '_FK', 'ID'), '_PK', 'ID'), '_XK', 'ID'), '_', '')+'?: '+( CASE
+																									   --TODO: Filestream and XML types not supported
+																										   WHEN system_type_name = 'bit'
+																										   THEN 'boolean'
+																										   WHEN system_type_name = 'tinyint'
+																										   THEN 'any'
+																										   WHEN system_type_name = 'binary'
+																												OR system_type_name = 'image'
+																												OR system_type_name = 'rowversion'
+																												OR system_type_name = 'timestamp'
+																												OR system_type_name LIKE 'varbinary%'
+																										   THEN 'any'
+																										   WHEN system_type_name = 'date'
+																												OR system_type_name = 'datetime'
+																												OR system_type_name LIKE 'datetime2%'
+																												OR system_type_name = 'smalldatetime'
+																										   THEN 'Date'
+																										   WHEN system_type_name = 'datetimeoffset'
+																										   THEN 'any'
+																										   WHEN system_type_name LIKE 'decimal%'
+																												OR system_type_name = 'money'
+																												OR system_type_name LIKE 'numeric%'
+																												OR system_type_name = 'smallmoney'
+																										   THEN 'number'
+																										   WHEN system_type_name LIKE 'float%'
+																										   THEN 'number'
+																										   WHEN system_type_name = 'uniqueidentifier'
+																										   THEN 'any'
+																										   WHEN system_type_name = 'smallint'
+																										   THEN 'number'
+																										   WHEN system_type_name = 'int'
+																										   THEN 'number'
+																										   WHEN system_type_name = 'bigint'
+																										   THEN 'number'
+																										   WHEN system_type_name = 'sql_variant'
+																										   THEN 'any'
+																										   WHEN system_type_name = 'real'
+																										   THEN 'any'
+																										   WHEN system_type_name LIKE 'char%'
+																												OR system_type_name LIKE 'nchar%'
+																												OR system_type_name = 'ntext'
+																												OR system_type_name LIKE 'nvarchar%'
+																												OR system_type_name = 'text'
+																												OR system_type_name LIKE 'varchar%'
+																										   THEN 'string'
+																										   WHEN system_type_name = 'time'
+																										   THEN 'any'
+																										   WHEN system_type_name = 'xml'
+																										   THEN 'any'
+																									   END )+', ' AS 'CTOR Params',
+																									   'this.'+REPLACE(REPLACE(REPLACE(REPLACE(name, '_FK', 'ID'), '_PK', 'ID'), '_XK', 'ID'), '_', '')+' = ' + REPLACE(REPLACE(REPLACE(REPLACE(name, '_FK', 'ID'), '_PK', 'ID'), '_XK', 'ID'), '_', '') + ';' AS 'CTOR Body',
+																									   CASE WHEN system_type_name in ('date', 'datetime', 'smalldatetime') or system_type_name like 'datetime2%' then
+																									   '!isEqual(XXX.originalData.'+REPLACE(REPLACE(REPLACE(REPLACE(name, '_FK', 'ID'), '_PK', 'ID'), '_XK', 'ID'), '_', '')+', XXX.dirtyData.' + REPLACE(REPLACE(REPLACE(REPLACE(name, '_FK', 'ID'), '_PK', 'ID'), '_XK', 'ID'), '_', '') + ') ||' else 
+																									   'XXX.originalData.'+REPLACE(REPLACE(REPLACE(REPLACE(name, '_FK', 'ID'), '_PK', 'ID'), '_XK', 'ID'), '_', '')+' !== XXX.dirtyData.' + REPLACE(REPLACE(REPLACE(REPLACE(name, '_FK', 'ID'), '_PK', 'ID'), '_XK', 'ID'), '_', '') + ' ||' end  AS 'isPristine'
+
+FROM sys.dm_exec_describe_first_result_set_for_object
+( OBJECT_ID(@SprocName), NULL );
+```
