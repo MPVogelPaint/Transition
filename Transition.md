@@ -20,6 +20,7 @@
   - [Service Desk Export](#service-desk-export)
 - [Misc](#misc)
   - [CheckFoxproFileSyncStatus](#checkfoxprofilesyncstatus)
+  - [Visual Studio Code Extensions](#visual-studio-code-extensions)
   - [Sproc Object Mapper](#sproc-object-mapper)
 
 ---
@@ -245,7 +246,7 @@ Once these files have been added we can start fleshing them out.
     }
     ```
 
-    This function is the default way to load data from the API. It will setup both copies (`dirtyData` and `originalData`) to what is returned by the server.
+    This function is the default way to load data from the API. It will setup both copies (`dirtyData` and `originalData`) to what is returned by the server by using the `BatchData<T>` constructor.
 
     ```ts
     private partialLoadBatchComplete(batchIdentifier, existingBatchComplete: BatchData<BatchComplete>): Observable<BatchData<BatchComplete>> {
@@ -266,6 +267,10 @@ Once these files have been added we can start fleshing them out.
         } else if (batchCompleteFieldKey === 'SerialFillDetails') {
           this.refreshCollectionField(existingBatchComplete.dirtyData.SerialFillDetails, existingBatchComplete.originalData.SerialFillDetails, freshBatchComplete.SerialFillDetails, 'BatchSerialFillDetailID');
         } else {
+          if (existingBatchComplete.dirtyData[batchCompleteFieldKey] === existingBatchComplete.originalData[batchCompleteFieldKey]) {
+            existingBatchComplete.dirtyData[batchCompleteFieldKey] = freshBatchComplete[batchCompleteFieldKey];
+          }
+          existingBatchComplete.originalData[batchCompleteFieldKey] = freshBatchComplete[batchCompleteFieldKey];
         }
       });
       return existingBatchComplete;
@@ -976,6 +981,8 @@ Primary contact is currently Dean Walhof.
 
 Related to ITInfo is the Service Desk Export. It is pulling from the same data even though it is actually a different [Kiln Repository](https://vpidev.kilnhg.com/Code/Repositories/sqlssis/ServiceDesk). The latest request from Dean Walholf on 12/20 was with Case 10410 to update how it exported some rows. This requested change would likely just require an altered stored procedure.
 
+Made a change on 1/8/2018, but hasn't been tested by Dean yet.
+
 ---
 
 # Misc
@@ -984,10 +991,17 @@ Related to ITInfo is the Service Desk Export. It is pulling from the same data e
 
 Task Scheduler:
 1. Actions > Program/script: `Powershell.exe`
-1. Action > Add arguments: `-noexit -command "& 'c:\Scripts\PS\CheckFoxproFileSyncStatus.ps1' 1"`
-1. Triggers > Begin the task: `On a schedule`
-1. Triggers > Settings: `Daily` and Recur every: `1` days
-1. Triggers > advanced settings > Enabled: `checked`.
+2. Action > Add arguments: `-noexit -command "& 'c:\Scripts\PS\CheckFoxproFileSyncStatus.ps1' 1"`
+3. Triggers > Begin the task: `On a schedule`
+4. Triggers > Settings: `Daily` and Recur every: `1` days
+5. Triggers > advanced settings > Enabled: `checked`.
+
+## Visual Studio Code Extensions
+
+1. Angular Language Service - Auto Imports, Autocomplete in Templates from Components, Go to definition - [Link](https://marketplace.visualstudio.com/items?itemName=Angular.ng-template)
+2. TSLint - Underlines issues with Typescript code - [Link](https://marketplace.visualstudio.com/items?itemName=eg2.tslint)
+3. Code Spell Checker - Better spellchecking - [Link](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker)
+4. Beautify - Formats Code (`Alt` + `Shift` + `F`) - [Link](https://marketplace.visualstudio.com/items?itemName=HookyQR.beautify)
 
 ## Sproc Object Mapper
 
