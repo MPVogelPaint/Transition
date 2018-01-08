@@ -319,13 +319,13 @@ Once these files have been added we can start fleshing them out.
 
     At this point our service class should be all set to be consumed by our component for reading data. We will return to this file later when we are ready to implement saving functionality, but for now we can continue with other files.
     
-    We won't consume this loading logic directly component, instead we will need to go through the `batch.service.ts`.
+    We won't consume this loading logic directly by the component; instead, we will need to go through the `Batch Service` (`batch.service.ts`).
 
 4. Updating the Batch Service (`batch/batch.service.ts`)
 
-    The Batch Service is going to facilitate access to each of the `Batch Part`'s service classes, and Local Storage.
+    The Batch Service is going to facilitate access to each of the `Batch Part`'s service classes and Local Storage.
     
-    We will begin by updating the `import` references and local properties to support the new *Batch Part* type.
+    We will begin by updating the `import` references and local properties to support the new *Batch Part*.
 
     ```ts
     ...
@@ -391,15 +391,15 @@ Once these files have been added we can start fleshing them out.
     }
     ```
 
-    With this we can see it is calling out to the function we just created in the `Batch Part`'s Service that is in charge of returning the `Batch Part`'s data. This function will setup the observable to be subscribed to by the Component and store that cold observable in the `obs` field of our `BatchData<BatchPart>`. We don't subscribe to the `obs` at this level because it is an asynchronous action and will instead wait to subscribe to it until we are in the Component for our new `Batch Part`.
+    With this we can see it is calling out to the function we just created in the `Batch Part`'s Service that is in charge of returning the `Batch Part`'s data. This function will setup the cold observable to be subscribed to by the Component and store it in the `obs` field of our `BatchData<BatchPart>` property. We don't subscribe to the `obs` at this level because it is an asynchronous action and will instead wait to subscribe to it until we are in the Component of our new `Batch Part`.
 
-    All the other methods (except the save functions) should be able to work on their own without needing an update for the new `Batch Part`. The other functions in this class are intended to provide a consistent way to work with the `Batch Part`s with some utility functions, and functions to ensure storing the `batch` in Local Storage is consistent.
+    All the other methods (except the save functions) should be able to work on their own without needing an update. The other functions in this file are intended to provide a consistent way to work with the `Batch Part`s. Some are utility functions and some are functions to ensure storing the `batch` in Local Storage is consistent and safe.
 
 5. Adding Batch Part Logic to the Component - (`batch-complete/batch-complete.component.ts`)
 
-    Finally we've gotten to the Batch Part's Component file. This file will house both the *Batch Part Logic* and the *Component Logic*.
+    Finally we've gotten to the Batch Part's Component file. This file will house both *Batch Part Logic* and *Component Logic*.
 
-    Since we are scaffolding out the *Batch Part Logic* that's where we will start. Unlike many other components these *Batch Part* components won't directly access their respective services. Instead they will interact with the `Batch Service` which will inturn interact with their services. We do this so that the `Batch Service` facilitates consistent access to the service and to local storage.
+    We will beign with scaffolding out the *Batch Part Logic*. Unlike many other components in the application, these *Batch Part* components won't directly access their respective services. Instead they will interact with the `Batch Service` which will inturn interact with those services. We do this so that the `Batch Service` facilitates consistent access to the service and to local storage.
 
     So getting started on the component we will add some boilerplate items.
 
@@ -502,11 +502,11 @@ Once these files have been added we can start fleshing them out.
     })
     ```
 
-    This `switchMap(...)` is receiving a result from the previous `switchMap(...)` of the `BatchIdentifier` object for the given `id`. The returning `BatchIdentifier` object will have a key value on it of `BatchID` which is the comes from the `MFG.Production_Batch.Production_Batch_PK` field. This and possibly other fields in the `BatchIdentifier` are likely required by the API/DB to access the `Batch Part`'s data that the component will be after.
+    This `switchMap(...)` is receiving a result from the previous `switchMap(...)` of the `BatchIdentifier` object for the given `id`. The returning `BatchIdentifier` object will have a key value on it of `BatchID` which is the comes from the `MFG.Production_Batch.Production_Batch_PK` field. This and possibly other fields in the `BatchIdentifier` will be used by the API/DB to access the `Batch Part`'s data.
 
-    So with that Identifier now available we will call our `Batch Service`'s `getBatch(...)` function. This function is one of the ones we expanded earlier to work with the new `Batch Part`. When we call this function we pass the BatchIdentifier (for accessing the API correctly), and we pass an array of `Batch Part`s. We pass an array because there are times when a component will need to load more than one data `Batch Part`. For the example we will leave it with a single `Batch Part` what we've just added. By adding the other Batch Part loading logic to the `Batch Part's Service` we made it easier if this new `Batch Part` needs to be used elsewhere later on too.
+    So with that Identifier now available we will call our `Batch Service`'s `getBatch(...)` function. This function is one of the ones we expanded earlier to work with the new `Batch Part`. When we call this function we pass the BatchIdentifier (for accessing the API correctly), and we pass an array of `Batch Part`s. We pass an array because there are times when a component will need to load more than one `Batch Part`. For our example we will leave it with a single `Batch Part`. By adding the other Batch Part loading logic to the `Batch Part's Service` we made it easier if this new `Batch Part` needs to be used elsewhere later on too.
 
-    The `getBatch(...)` function will return the whole `Batch` object, and make sure it is setup to load the desired `Batch Part` we passed in the array (although there might not be any data in our `Batch Part` just yet).
+    The `getBatch(...)` function will return the whole `Batch` object, and make sure it is setup to load the desired `Batch Part`s we passed in the array (although there might not be any data in our `Batch Part` just yet).
 
     Our final `.subscribe(...)` is where we really get the `Batch` object and related `Batch Parts` available to work with.
 
