@@ -167,10 +167,10 @@ Once these files have been added we can start fleshing them out.
     }
     ```
 
-    So in this update we add the Batch Part class as an import so we can use that type later.
+    So in this update we added the Batch Part class as an import so we can use that type later.
 
-    Then we add a property `Complete`, this is how we will access the `Batch Complete` data.
-    The added `Complete` property is wrapped in another class `BatchData`. We will get more detail on `BatchData` class later, but it is a wrapper class that gives extra ways to interact with the data. Having our `BatchComplete` class be wrapped in this give s consistent way to do those extra features. (See [Local Storage Batch Design](#local-storage-batch-design) for more detail.)
+    Then we added a property `Complete`, this is how we will access the `Batch Complete` data.
+    The added `BatchComplete` type is wrapped in another class `BatchData`. We will get more detail on `BatchData` class later, but it is a wrapper class that gives extra ways to interact with the data. Having our `BatchComplete` class be wrapped in this give s consistent way to do those extra features. (See [Local Storage Batch Design](#local-storage-batch-design) for more detail.)
 
     Finally we add `this.Complete = null;` to the constructor to make the initial Batch object have a property for the the `Complete` during `batch` object creation.
 
@@ -305,7 +305,7 @@ Once these files have been added we can start fleshing them out.
 
     These three functions are a way to load the `Batch Part` in a partial sense. This will be called if we only want to leave any modifications that the user has made in place, but still refresh the rest of the data. For a *pristine* field that means both the `dirtyData` and `originalData` copies of that field will be updated. For a *dirty* field that means that only the `originalData` copy of the data will be updated. This prevents the user from losing their work while still being able to see the latest known values on the server.
 
-    The final block we need right now is a `isPristine(...)` function. This function will need to compare each value between the `dirtyData` and `originalData` copies to tell if the value has changed. We cannot rely on the Angular *pristine* value because we are storing it in Local Storage and lose those attributes on storage and retrieval. One hurdle with the pristine check is that it cannot directly compare sub-collections based on something like the item's index in the array. Instead we need to know the identifier or primary key field so that if there are additions or removals from the array we can compare the correct items against each other. There may be an option to simplify this by looping through `Object.keys(...)` result, but you need to be able to traverse into sub-collections correctly as well.
+    The final block we need right now is a `isPristine(...)` function. This function will need to compare each value between the `dirtyData` and `originalData` copies to tell if the value has changed. We cannot rely on the Angular *pristine* value because we are storing our `Batch` object in Local Storage and lose those attributes on storage and retrieval (the Angular pristine state is for rendered elements). One hurdle with the pristine check is that it cannot directly compare sub-collections based on something like the item's index in the array. Instead we need to know the identifier or primary key field so that if there are additions or removals from the array we can compare the correct items against each other. There may be an option to simplify this by looping through `Object.keys(...)` result, but you need to be able to traverse into sub-collections correctly as well.
 
     ```ts
     isPristine(batchComplete: BatchData<BatchComplete>): boolean {
