@@ -231,7 +231,7 @@ Once these files have been added we can start fleshing them out.
 
     Then in the `getBatchDataComplete(...)` function we are making a way to return an observable of the `BatchComplete` data from either the API or from the one that is already known in local storage (more on that part later). The logic in the method is checking different properties on the `Batch Data` object of type `Batch Complete`. If the object doesn't exist it will go straight to the API or if the object is *pristine* and *stale*. Otherwise if it is *dirty* or *fresh* then it will load it in a different manner. See the Loading Design section.
 
-    The reason this loading mechanic is more complex is that we want to keep track of two copies of the data with the `BatchData<T>` design. One being editable `dirtyData` and the other only what is returned by the server `originalData`. See the Local Storage Batch Design section for more detail on these ideas.
+    The reason this loading mechanic is more complex is that we want to keep track of two copies of the data with the `BatchData<T>` design. One being editable `dirtyData` and the other only what is returned by the server `originalData`. See the [Local Storage Batch Design](#local-storage-batch-design) section for more detail on these ideas.
 
     This function we've setup calls other functions on the `batch-complete.service.ts` so we will need those too.
 
@@ -534,7 +534,7 @@ Once these files have been added we can start fleshing them out.
     ...
     ```
 
-    So this simple function is calling a function that didn't need to be edited on the `Batch Service` that will take the enum of the the `Batch Part` (`BatchPart.Complete`) to know what part is being passed/updated and then the actual local property of `this.batchComplete` will get added to the `Batch` object and stored in Local Storage. As mentioned in Local Storage Batch Design section this should be chained into by any changes that occur in the `Batch Part`'s Component.
+    So this simple function is calling a function in the `Batch Service` that will take the enum of our `Batch Part` (`BatchPart.Complete`) and will update the `Batch` object based on that and stored in Local Storage. As mentioned in [Local Storage Batch Design](#local-storage-batch-design) section this should be chained into by any changes that occur in the `Batch Part`'s Component.
 
     At this point the `Batch Part`'s data should be available and we can now get into the implementation details for the component. Once we have some Component Logic we will return to the Batch Part Logic for saving.
 
@@ -619,7 +619,7 @@ Now that `Batch Part`'s data is available to be consumed in the client we can ge
     <span>{{batchComplete.dirtyData.CompleteAmount}}</span>
     ```
 
-    To fully take advantage of our two copies of the data and the view state we should have the form control react in different ways and give an option to edit the value:
+    To take full advantage of our two copies of the data and the view state we should have the form control react in different ways and give an option to edit the value:
 
     ```html
     <div [ngClass]="{'form-group': true, 'has-warning': batchComplete.dirtyData.CompleteAmount !== batchComplete.originalData.CompleteAmount && viewMode !== ViewMode.New}">
@@ -633,23 +633,23 @@ Now that `Batch Part`'s data is available to be consumed in the client we can ge
 
     This will render to something like this:
 
-    ![alt text](BatchComplete_CompleteAmount.gif "Logo Title Text 1")
+    ![alt text](BatchComplete_CompleteAmount.gif "Gif of the element in action")
 
     Fair amount of stuff going on in that block, but what it gives us is a couple of nice things:
 
-    1. Paragraph or an Input element based on our View Mode. Plain text paragraph elements are easier to read than something like a disabled input during a View Mode.
+    1. `Paragraph` or an `Input` element based on our View Mode. Plain text paragraph elements are easier to read than something like a disabled input during a View Mode.
     2. The Input element is a `type="number"` which will give the browser a spinner option and keep the data value the correct number type.
     3. The element has consistent Bootstrap styling with the rest of the application's forms.
     4. The previous known value for the field is also known.
         1. This gives us an option to show a styling of `has-warning` for the control if the value has changed. This gives the user a quick visual indication what parts they've touched.
-        2. We can display the previous value incase they pause while working and need to know the what it was before they started modifying it.
-    5. With the `(ngModelChange)=...` we are able to notify the batch service with the function set up in the previous section for storing an updated `Batch Part`.
+        2. We can display the previous value incase users pause while working and need to know the what it was before they started modifying it.
+    5. With the `(ngModelChange)=...` function we are able to notify the batch service that the `Batch Part` has changed nd should be updated in Local Storage.
 
-    We can break down each section of the template
+    We can break down each section of the template:
 
-    1. The wrapping `<div>` is styled to get a class of `has-warning` if the copies of data are different (*dirty*), and if view mode is not *New* (View Mode of *New* would only have ever have a value in the `dirtyData` copy.)
+    1. The wrapping `<div>` is styled to get a Bootstrap class of `has-warning` if the copies of data are different (*dirty*), and if view mode is not *New* (View Mode of *New* would only have ever have a value in the `dirtyData` copy).  It will always have the Bootstrap class of `form-group`.
     2. The next block `<label>` has a `for` property to give a click on the label focus to the Input element, and then the text value of `Complete Amount`.
-        1. Inside that Label we have an optional Icon with a tooltip. The icon shows with the same rule as the `has-warning` class for the form control, and the tooltip is being bound to the `originalData` copy of data. It's ok to use this field in the template such that the user never has an option to edit the underlying value.
+        1. Inside that Label we have an optional Icon with a tooltip. The icon shows with the same rule as the `has-warning` class for the form control, and the tooltip is being bound to the `originalData` copy of data. It is ok to use this field in the template such that the user never has an option to edit the underlying value.
     3. Next we have an `<input>` tag that only shows during the view modes for *Edit* or *New*. It binds to the `dirtyData` copy of the field and has a change event trigger to store updated values to our Local Storage object.
     4. The final element is the plain text paragraph display of the `dirtyData` this gives a easier way to read the values of the form when the page is in *View* mode.
     - Side Note: We can see we are using the `enum`: `ViewMode` in the template here. This is why we needed to import it and make a local property copy of the `enum`.
@@ -970,7 +970,7 @@ Latest requests that Ashton hasn't heard about would be the Service Request List
 Otherwise the open cases assigned to him or me are still open.
 
 Main application case list:
-10416 - New Request from Mike about Service Vendor List query.
+10416 - New Request from Mike about Service Vendor List query. - This should have a fix in place waiting to go to production.
 10196 - I know Ashton was in the middle of this before he left for holiday.
 10229 - I think Ashton finished the multi column sorting, not sure if he still has any local changes left.
 10226 - Parent Case with the ITInfo batch 2 changes from Mike.
