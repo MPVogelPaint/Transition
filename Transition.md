@@ -12,6 +12,12 @@
       - [Scaffolding out the Batch Part files](#scaffolding-out-the-batch-part-files)
       - [Scaffolding out the Batch Part component specific logic](#scaffolding-out-the-batch-part-component-specific-logic)
       - [Scaffolding out the Batch Part save logic](#scaffolding-out-the-batch-part-save-logic)
+  - [Metadata Module](#metadata-module)
+    - [Design](#design)
+  - [Batch View Module](#batch-view-module)
+    - [Design](#design)
+    - [Table](#table)
+    - [Calendar](#calendar)
 - [Eparts SDS Services](#eparts-sds-services)
   - [Eparts SDS Uploader](#eparts-sds-uploader)
   - [SDS Email Log (Download Distribution Log)](#sds-email-log-download-distribution-log)
@@ -921,6 +927,30 @@ As mentioned in previous sections we will now return to the our `Batch Part` ser
         2. If the summary wasn't successful, we will want to warn the user that something did not go as expected so that they have a chance to either make changes to the `Batch` or notify a programmer about a bug.
 
 At this point we should have been able to save our `Batch Part` that was loaded from the server or local storage, and edited by the user!  The rest of the work should just be implementation details.
+
+## Metadata Module
+
+### Design
+
+Metadata module should be used to house lookup tables that are user managed. Accessing the module should be open to all users, but editing information should be restricted to users with the `Manage` Security Role for Production Tracking.
+
+## Batch View Module
+
+Idea of the Batch View Module is to have screens that display information about several batches at a time. This can be done in a variety of ways: Tables/Grids, Calendars, and Boards.
+
+### Design
+
+Design of the Batch View Module was to have a group of tables in the database that define the type of view being displayed. This will eventually allow for user customization, and easier management of global views.
+
+Each Batch View will belong to a Batch View Output Type. This defines the stored procedure query that will be used to return the data from the database. It may return more column than is needed for the current view, but a slightly larger scope for the query allows reuse for other areas. We chose not to use dynamic SQL as it can be difficult to ensure accuracy and consistency, and also chose to not use a single very wide result option as performance is also a concern. Finding a balance of wide enough for several related views, but not so wide that it affects performance is key to creating and using Batch Views.
+
+### Table
+
+Displays results in a grid. Plenty of existing examples. Requires two sprocs one to return the actual results and one to return the total count of available results; we are using paging in the tables so all results may not be returned in the first page. Filtering happens on the server side.
+
+### Calendar
+
+Returns a month at a time. Custom display views can be implemented and switched between. Should return all possible results for that month, but the Calendar control allows changing the aggregator date on the client.
 
 ---
 
