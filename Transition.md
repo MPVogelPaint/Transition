@@ -1056,7 +1056,7 @@ The goal for this component is to replace a regular `<select>` element with a co
     }
     ```
 
-2. Now that we have propertys available we can move to the template file to implement how we will use them.
+2. `batch/batch-form/batch-form-select/batch-form-select.component.html`
 
     ```html
     <div [ngClass]="{'form-group': true, 'has-warning': value !== originalValue && viewMode !== ViewMode.New}">
@@ -1107,11 +1107,224 @@ The goal for this component is to replace a regular `<select>` element with a co
 
     The `<ng-container>` tag is used to loop through all the options on the `dataSource`. Inside of that we have the actual `<option>` tag which we only show if that row shouldn't be filtered out. We then bind that row's value to the `dataSourceValueField` that we passed, and inside the rendered part of the tag we show the `dataSourceDisplayField` field for the user to know which choice to make.
 
+    Optionally we could remove the `<ng-container>` block and do the dataSource filtering either with the API or with the calling component.
+
     ```html
     <p *ngIf="viewMode === ViewMode.View" class="form-control-static">{{dirtyDisplayValue}}</p>
     ```
 
     The last part is a simple `<p>` element that we use to show a simple string representation of the chosen option when we are in view mode.
+
+3. `batch/batch-form/batch-form-select/batch-form-select.component.css`
+
+    We don't have any component specific styles, but if we did we'd store them here.
+
+4. `batch/batch-form/batch-form-wrapper.ts`
+
+    We will now go into some more detail about the Batch Form Wrapper and what it can be used for. The goal behind it was to allow two-way data binding with a form component without the need of an `@Output()` parameter with an `EventEmitter`, or service subscriptions, or anything like that, but rather just allow for interacting with the component with the `ngModel` in the same fashion that we would we a regular `<select>` element.
+
+    Most of this file came from a combination of the Angular docs and (I think) [this blog post](https://blog.thoughtram.io/angular/2016/07/27/custom-form-controls-in-angular-2.html) (there are several other blog posts about this topic).
+
+    This code makes the ngModel available
+
+    ```ts
+    import { ControlValueAccessor } from '@angular/forms';
+    import { InjectionToken, Type } from '@angular/core';
+    import { ViewMode } from '../../core/view-mode/view-mode.model';
+
+    const noop = () => { };
+
+    /**
+    * This class gives easy access to the ControlValueAccessor which allows components/directives that accept two way data binding with ngModel.
+    */
+    export abstract class BatchFormWrapper<T> implements ControlValueAccessor {
+      innerValue: T;
+      onTouchedCallback: () => void = noop;
+      onChangeCallback: (_: T) => void = noop;
+      ViewMode = ViewMode;
+
+      get value(): T {
+        return this.innerValue;
+      }
+
+      set value(value: T) {
+        if (value !== this.innerValue) {
+          this.innerValue = value;
+          this.onChangeCallback(value);
+        }
+      }
+
+      // Set touched on blur
+      onBlur() {
+        this.onTouchedCallback();
+      }
+
+      // Form ControlValueAccessor interface
+      writeValue(value: T) {
+        if (value !== this.innerValue) {
+          this.innerValue = value;
+        }
+      }
+
+      // Form ControlValueAccessor interface
+      registerOnChange(fn: any) {
+        this.onChangeCallback = fn;
+      }
+
+      // Form ControlValueAccessor interface
+      registerOnTouched(fn: any) {
+        this.onTouchedCallback = fn;
+      }
+    }
+
+    export class BatchFormValueAccessor {
+      provide: InjectionToken<ControlValueAccessor>;
+      useExisting: Type<any>;
+      multi: boolean;
+    }
+    ```
+
+    By extending this class with our `Batch Form` component means we don't need to manually add the boilerplate needed to interact with Angular's `Value Accessor` logic every time since this encapsulates it.
+
+5. `batch/batch-form/batch-form.css`
+
+    ```css
+    div.has-warning>p.form-control-static {
+      color: #8a6d3b;
+    }
+    ```
+
+    This global style for the Batch Form components makes sure the display value when in view mode gets the same coloring when the field has been changed. There might be cause to add more global `Batch Form` styles in the future.
+
+6. `batch/batch-order/batch-order.component.html`
+
+    At this point we have something setup that we can hopefully use to replace similar form elements implementations of the basic `<select>` control. We have to find a place to actually use this though.
+
+    The Batch Order component has a field is a prime candidate for this, the `BatchTypeID` field. `BatchTypeID` is a field that is a key referencing a foreign table for fields like these the default implementation will be to use a single `<select>` element to represent the available choices. Since we have more features avaialable to us in the `Batch Module` with the `BatchData<T>` data models we will want our `<select>` tag to do more for us which is why we will use our shiny new `Batch Form` component `batch-form-select`.
+
+    To implement this for the `BatchTypeID` field will look like this in the template:
+
+    ```html
+    ...
+      <div class="col-xs-12 col-sm-3">
+        <app-batch-form-select [id]="'batchType'" [label]="'Batch Type'" [viewMode]="mode" [dataSource]="batchTypes" [dataSourceValueField]="'ID'" [dataSourceDisplayField]="'Name'" [originalValue]="batchOrder.originalData.BatchTypeID" [originalDisplayValue]="batchOrder.originalData.BatchType" [dirtyDisplayValue]="batchOrder.dirtyData.BatchType" [filterField]="'ProductionLocationID'" [filterValue]="batchOrder.dirtyData.ProductionLocationID" [(ngModel)]="batchOrder.dirtyData.BatchTypeID" (ngModelChange)="batchTypeChange()"></app-batch-form-select>
+    </div>
+    ...
+    ```
+
+    There are some things to notice about how we are calling our `<app-batch-from-select />` tag.
+
+    1. Our attributes that we are passing in to our `Input` parameters, things like `id`, `label`, `viewMode`, have the Angular square brackets around their name: `[]`. This indicates that they are for that component to use.
+    2. The value for attributes like `[id]` are defined here in the template. Instead of adding a property on the component as something to pass in for a simple attribute like this we will pass in a `string` value defined here. The `[id]="'batchType'"` is using the double quotes (`"`) to define the attribute value, but the single quotes (`'`) are being used to define a string of `batchType` which is what we've chosen to identify this field with. We do this same thing for the `label` and other attributes. This is also true for fields like `dataSourceValueField` where we aren't passing the actual field's value to the sub-component, but rather a string of what the field name is, and letting the sub-component use that for its implementation.
+    3. A field like `viewMode` is different in that we are passing a field that exists on the component to our sub-component.
+    4. Our `originalValue` field we are passing from our `originalData` part of the `BatchData<BatchOrder>` object. This should be true for all `original` type fields. These should never be directly editable by the user, and should only be used for reference or comparison to the current value.
+    5. When we are using the `[(ngModel)]` binding here to indicate what the real value that is being edited by this control is our `BatchOrder.dirtyData.BatchTypeID`.
+    6. The final attribute isn't an input or output property, but a regular `(ngModelChange)` property with a function attached to it. Because this `Batch Form` component is using `Value Accessor` and `ngModel` we are able to depend on this to trigger once that value has changed. We will **ALWAYS** need to take some sort of action after a user changes an field/element in the Batch Module so it is nice to be able to use this here.
+
+    We will follow what the `batchTypeChange()` method does in our component logic and look at the other areas that this binding is interacting with the underlying component data next.
+
+7. `batch/batch-order/batch-order.component.ts`
+
+    With a template binding in place we need to make sure all the behind the scenes values are setup to work properly.
+
+    First this assumes that we've already gone through the steps to make sure that our `BatchOrder` object is loaded properly from the `Batch Service` like we walked through in the [Batch Part Guide](#guide-for-new-batch-part-and-batch-tab).
+
+    With that in mind we will need to make sure that our `select` component is able to have a data source so we need to make something available 
+
+    To our imports we will need to add relevant model and services.
+
+    ```ts
+    ...
+    import { BatchTypeService } from '../../metadata/batch-type/batch-type.service';
+    import { BatchType } from '../../metadata/batch-type/batch-type.model';
+    ...
+    ```
+
+    To our local fields we will need a place to store the results from the service, and will need to let the service be made available to the component.
+
+    ```ts
+    ...
+    export class BatchOrderComponent implements OnInit, OnDestroy {
+      batchTypes: BatchType[];
+      ...
+      constructor() {
+        ...
+        private batchTypeService: BatchTypeService,
+        ...
+      }
+    ...
+    }
+    ```
+
+    Then in our `loadData()` function that is called during the initialization of the component we will need to request data from the `batchTypeService` and store it for use by our sub-component later.
+
+    ```ts
+    ...
+    loadData(): void {
+      ...
+      this.batchTypeService.getBatchTypes()
+        .subscribe((batchTypes: BatchType[]) => {
+          this.batchTypes = batchTypes;
+        });
+      ...
+    }
+    ...
+    ```
+
+    Now at this point our data source should be populated with all possible `Batch Types`. For this data source we've chosen to load all possible batch types during the initialization phase of loading the `Batch Order` component.
+    
+    Because `Batch Types` are dependent on the `Production Location` we will need to filter the available data source rows to only what is relevant to our `Batch`. We could have chosen to do the filtering at the API, and updating our data source when dependent items change, but `Batch Type` is simple enough that we can do the filtering in the component. This will not always be true, and if so we will want to reload the data source either after the `Batch Part` has been loaded, or after a relevant filter value has changed.
+
+    For our filtering we are basing it off of the `BatchOrder.dirtyData.ProductionLocationID` property. When we setup the template call we set the `[filterValue]="batchOrder.dirtyData.ProductionLocationID"` attribute to that value. If that value changes then our sub-component will receive a new value and will rebind the `option` elements.
+
+    The next thing that we need to do in this file is make sure we handle changes to our `Batch Type` properties correctly. We will need to make sure that we inform the `Batch Service` with any changes. With our implementation of the `app-batch-form-select` component we gave it a `(ngModelChange)="batchTypeChange()"` attribute. At this point we will define what needs to happen when our `<select>`'s value changes.
+
+    ```ts
+    ...
+    batchTypeChange(): void {
+      this.batchOrder.dirtyData.BatchTypeID = Number(this.batchOrder.dirtyData.BatchTypeID);
+      let batchType = this.batchTypes.find(x => x.ID === this.batchOrder.dirtyData.BatchTypeID);
+      this.batchOrder.dirtyData.BatchType = batchType.Code + ' - ' + batchType.Name;
+      this.setDefaultUnitOfMeasure();
+      this.batchOrderChange();
+    }
+    ...
+    ```
+
+    When the `BatchTypeID` changes due the two way databinding in the `[(ngModel)]` we've changed the value in `batchOrder.dirtyData.BatchTypeID`, but there is more to do. 
+    
+    ```ts
+    this.batchOrder.dirtyData.BatchTypeID = Number(this.batchOrder.dirtyData.BatchTypeID);
+    ```
+
+    The first line has us setting that value to a number representation of itself, this is because the underlying `<select>` control will string-ify the value, but we want to make sure we're staying in our correct types.
+
+    ```ts
+    let batchType = this.batchTypes.find(x => x.ID === this.batchOrder.dirtyData.BatchTypeID);
+    this.batchOrder.dirtyData.BatchType = batchType.Code + ' - ' + batchType.Name;
+    ```
+
+    The next part has us finding what record was chosen in our data set. We do this by using our new value, and comparing it to the known key field in the data set which for the example is `ID`.
+
+    With that record we want to know the `Code` and the `Name` string values for a string representation of the chosen option, and concatenate them together with a `-` to give a useful display value. This might be shown if we go back into view mode, and should match what our API would return if this was saved and reloaded. This might not always require two fields to format the string representation correctly, but for the `Batch Type` it is helpful to display both.
+
+    These first two steps after a `<select>` element is changed should happen for any circumstances we are using `<select>` element.
+
+    The next step is specific to `Batch Type`, and for other components there might be other steps that need to occur after a choice has been made.
+
+    ```ts
+    this.setDefaultUnitOfMeasure();
+    ```
+
+    This step is calling a separate function `setDefaultUnitOfMeasure()` after the `Batch Type` changes. This occurs to help the users fill out the form since all `Batches` with the same `Batch Type` should have the same `Unit of Measure`. This extra step just does that work for them and is based off their choice in this element.
+
+    The final and possibly most important step is to inform the `Batch Service` that our `Batch Order` object has changed. This `batchOrderChange()` function should be called **ANY** time one our fields is changed and this is not exception. Once we've completed our misc actions we chain our function into that one to ensure that the `Batch` object has recorded an up-to-date copy of the `Batch Order`.
+
+    ```ts
+    this.batchOrderChange();
+    ```
+
+At this point we've implemented a new `Batch Form` component, and used it in one of our `Batch Part` tabs. We've written the component in such a way that we can reuse it in any other area that would want to use a simple `<select>` element which means the next time we need to implement a simple lookup table field it should be easier to do and should be 100% consistent with how we've done this one.
 
 ##### Batch Form Input Select
 
