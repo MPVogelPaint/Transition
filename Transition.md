@@ -1012,6 +1012,7 @@ Primary contact is currently Dean Walhof.
 Related to ITInfo is the Service Desk Export. It is pulling from the same data even though it is actually a different [Kiln Repository](https://vpidev.kilnhg.com/Code/Repositories/sqlssis/ServiceDesk). The latest request from Dean Walholf on 12/20 was with Case 10410 to update how it exported some rows. This requested change would likely just require an altered stored procedure.
 
 Made a change on 1/8/2018, but hasn't been tested by Dean yet.
+Pushed to production on 1/11/2018 and Dean is now able to test.
 
 ---
 
