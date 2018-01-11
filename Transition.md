@@ -2,16 +2,23 @@
 - [Production Tracking Beta](#production-tracking-beta)
   - [Batch Module](#batch-module)
     - [Overview](#overview)
-    - [Local Storage Batch Design](#local-storage-batch-design)
-    - [Loading Design](#loading-design)
-    - [Saving Design](#saving-design)
-    - [Form components](#form-components)
+      - [Local Storage Batch Design](#local-storage-batch-design)
+      - [Loading Design](#loading-design)
+      - [Saving Design](#saving-design)
+      - [Form components](#form-components)
     - [Guide for new Batch Part and Batch tab](#guide-for-new-batch-part-and-batch-tab)
       - [Component Logic vs Batch Logic](#component-logic-vs-batch-logic)
       - [Required Files for Batch Parts](#required-files-for-batch-parts)
       - [Scaffolding out the Batch Part files](#scaffolding-out-the-batch-part-files)
       - [Scaffolding out the Batch Part component specific logic](#scaffolding-out-the-batch-part-component-specific-logic)
       - [Scaffolding out the Batch Part save logic](#scaffolding-out-the-batch-part-save-logic)
+    - [Batch Form Guide](#batch-form-guide)
+      - [Regular Batch Form Components](#regular-batch-form-components)
+        - [Batch Form Select (`batch/batch-form/batch-form-select/`)](#batch-form-select-batchbatch-formbatch-form-select)
+        - [Batch Form Input Select](#batch-form-input-select)
+      - [Table / Repeater Batch Form Component](#table-repeater-batch-form-component)
+    - [Troubleshooting Guide and Common Implementation Issues](#troubleshooting-guide-and-common-implementation-issues)
+    - [Future Batch Module Core Development, Limitation, and Concerns](#future-batch-module-core-development-limitation-and-concerns)
   - [Metadata Module](#metadata-module)
     - [Design](#design)
   - [Batch View Module](#batch-view-module)
@@ -43,7 +50,7 @@ The idea that we were trying to go for with the batch module is a way to split o
 We also wanted to store the loaded batch information locally to make reloading a batch fast and give a chance for limited offline capabilities.
 Storing the batch locally allows changing different batch parts and then committing a single save action to save all the parts.
 
-### Local Storage Batch Design
+#### Local Storage Batch Design
 
 When a batch is loaded we want to only load the necessary parts of the batch, not the whole thing. For example when we load the `Order` tab we want to only load the data related to that tab.
 However, we also want to keep all of the batch parts together in local storage and attached to a single `Batch` object there. This lead to having a `Batch.Order` batch part.
@@ -74,7 +81,7 @@ When local storage is full this is used to determine what items can be purged to
 Each `Batch Part` also has a `dateLoaded` property and similar to the `lastTouched` it indicates when the last time the `Batch Part` was loaded.
 This is used however to determine if the `Batch Part` should be loaded from Local Storage or reloaded from the API.
 
-### Loading Design
+#### Loading Design
 
 A `Batch` and `Batch Part` can be loaded in a couple of different ways.
 
@@ -92,7 +99,7 @@ For the `Batch Order` the obs will look like this:
  *Pristine* field will have both copies of the data updated. This allows the user to keep things that they've edited there, but also updated the data to show what is currently known on the server.
 6. If the local storage `Batch` object does not exist then it can be loaded from the server normally.
 
-### Saving Design
+#### Saving Design
 
 The saving for a `Batch` is intended to be a single action that can cover multiple `Batch Part`.
 The `batch.service.ts -> save(...)` is the main driver of the operation.
@@ -102,7 +109,7 @@ When the main observable is ready all the sub parts are subscribed to and trigge
 When they all complete it will determine if there any of the parts had issues and report that to the user, otherwise it will reload the data from the server to make sure everything is fresh after the save.
 We need to be able to call all the `Batch Part`s save operations from the `batch.service.ts` from any component because a `Batch Part` could be changed, then the user might reload the page and come back to another `Batch Part` and save both.
 
-### Form components
+#### Form components
 
 Angular allows us an easy way to make mini components good at one thing. Because the bindings for Batch form controls can be tricky with the two sets of data (`originalData` and `dirtyData`) having a mini reusable component allows us to get it right once and then not worry about it again.
 
@@ -927,6 +934,192 @@ As mentioned in previous sections we will now return to the our `Batch Part` ser
         2. If the summary wasn't successful, we will want to warn the user that something did not go as expected so that they have a chance to either make changes to the `Batch` or notify a programmer about a bug.
 
 At this point we should have been able to save our `Batch Part` that was loaded from the server or local storage, and edited by the user!  The rest of the work should just be implementation details.
+
+### Batch Form Guide
+
+In the [Guide for new Batch Part and Batch tab](#guide-for-new-batch-part-and-batch-tab) we went through adding a single `Batch Form` component during developing our `Batch Part`'s component.
+
+This guide will attempt to into more depth with developing more `Batch Form` components and things to look for when developing them.
+
+Overall the intention for `Batch Form` components is to simplify the binding when interacting with the complex `Batch Part` objects and their fields, and provide consistently styled form elements that the user can interact with. Refactoring these common elements into specific `Batch Form` components allows us to avoid bugs across the `Batch Module` by being able to focus on correctly developing a form element a single time and then simply referencing it instead of re-implementing the same form elements over and over across each view.
+
+Field Type | Example
+:--|:--
+Regular Field | `Batch.Complete.CompleteAmount`: this is a simple number on the `BatchComplete` object.
+Repeater Field | `Batch.Complete.BatchFillDetail.ProductSKUID`: this is a field that is part of the `BatchFillDetail` array item.
+
+#### Regular Batch Form Components
+
+The first type of `Batch Form` component this guide will cover is for regular single value objects. The [Guide for new Batch Part and Batch tab](#guide-for-new-batch-part-and-batch-tab) covered adding a form component for simple `Number` fields. We will go through adding something more complex with a `<select>` batch form component and a `<select>` with another `<input>` element.
+
+For this guide we will be looking at implementing the `batch-form-select` and the `batch-form-input-select` components. Because the implementation for these will be based on fields that are part of a regular object / something that isn't part of an `Array` collection field.
+
+##### Batch Form Select (`batch/batch-form/batch-form-select/`)
+
+The files that we will be looking at in this section:
+
+1. `batch/batch-form/batch-form-select/batch-form-select.component.ts`
+2. `batch/batch-form/batch-form-select/batch-form-select.component.html`
+3. `batch/batch-form/batch-form-select/batch-form-select.component.css`
+4. `batch/batch-form/batch-form-wrapper.ts`
+5. `batch/batch-form/batch-form.css`
+6. `batch/batch-order/batch-order.component.html`
+7. `batch/batch-order/batch-order.component.ts`
+
+The goal for this component is to replace a regular `<select>` element with a component that can implement that logic along with the other logic and features we have available with our `BatchData<T>` models. Once we have generated the files we can begin to implement them.
+
+1. `batch/batch-form/batch-form-select/batch-form-select.component.ts`
+
+    In this file we will need to implement our component logic. This file will include `@Input` and `@Output` parameters to allow our component to send/receive data from components that implement it. It will also contain any references or functions we need to let this component function consistently.
+
+    In the [Guide for new Batch Part and Batch tab](#guide-for-new-batch-part-and-batch-tab) we implemented the `batch-form-input-number` form component it had a relatively small number of `@Input` parameters. Because `<select>` controls are inherently more complex we will need a greater number for this component.
+
+    Input Parameter | Type | Description and Usage
+    :--|:--|:--
+    `id` | `string` | This is an element id. It allows us to have our `<label>` element clickable with a `for=""` attribute. We will use this as the `<select>` elements `id` attribute.
+    `label` | `string` | This is a string value of what we want our `<label>` element to display. This informs the user what they're editing.
+    `viewMode` | `ViewMode` | This is the current state the form is in. Based on the mode we will either display a simple string value of the selected item, or we will display an editable `<select>` element for the user to change the value.
+    `originalValue` | `number` | This is the last known value from the server for the `<select>` element's value. We always will want this to be a number because we use `<select>` for lookup fields and that data should be known by that key.
+    `originalDisplayValue` | `string` | This is last known string representation of the value chosen by the `<select>`. We will use this if we are in `viewMode === ViewMode.View`.
+    `dataSource` | `Array<any>` | This is what we will use to pass in the available options the `<select>` can display.
+    `dataSourceValueField` | string | This is the field name in the `dataSource` object that will be the **Key** value.
+    `dataSourceDisplayField` | string | This is the field name in the `dataSource` object that will be used to show the user what `<option>` they're choosing.
+    `dirtyDisplayValue` | string | This is the string representation of the currently chosen element.
+    `filterField` | string | This is the field in the `dataSource` that can be used to narrow down the available `<option>` elements.
+    `filterValue` | number | This is the value that will be used to narrow down the available `<option>` elements.
+
+    Similar to the `batch-form-input-number` that we implemented in the [Guide for new Batch Part and Batch tab](#guide-for-new-batch-part-and-batch-tab) we don't have a `@Input` parameter for the actual dirty `value` of our `<select>`. This is because the `batch-form-input-number` extends the `BatchFormWrapper<number>` which we will look at later, but for now we can remember that we have fields available to us in our component that are defined at that other level.
+
+    Input Parameter | Type | Description and Usage
+    :--|:--|:--
+    `value` | `number` | This will be bound to using the regular `[(ngModel)]`. It is the dirty value of the `<select>` element. For this `Batch Form` component it is the only value that should be edited directly by the user.
+    `ViewMode` | `enum` | This is a `enum` of the possible view modes. We need to define it as a property so that our template files (`.html`) can bind to it.
+
+    So now that we know all of the parameters that we will need and have available we can implement this file.
+
+    ```ts
+    // Component is a regular import, Input is used to allow @Input() parameters, and forwardRef is required for the Batch Form Wrapper implementation.
+    import { Component, forwardRef, Input } from '@angular/core';
+
+    // This import is needed for getting access to the ngModel property.
+    import { NG_VALUE_ACCESSOR } from '@angular/forms';
+
+    // These are imported to get access to our shared logic in the BatchFormWrapper which helps with the ngModel access.
+    import { BatchFormWrapper, BatchFormValueAccessor } from '../batch-form-wrapper';
+
+    // While the ViewMode enum is defined in the BatchFormWrapper we need this import for the mode property's type to compile correctly.
+    import { ViewMode } from '../../../core/view-mode/view-mode.model';
+
+    // We need some boiler plate to implement our Batch Form Wrapper. We are telling it to use the BatchFromValueAccessor in our BatchFormSelectComponent which will give us access to the ngModel (value parameter).
+    export const BATCH_FORM_VALUE_ACCESSOR: BatchFormValueAccessor = {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: forwardRef(() => BatchFormSelectComponent),
+      multi: true
+    };
+
+    /**
+    * This component is the default select form control for the Batch Module.  Use two way ngModel with it for data binding.
+    */
+    @Component({
+      selector: 'app-batch-form-select',
+      templateUrl: './batch-form-select.component.html',
+      styleUrls: [
+        './batch-form-select.component.css',
+        '../batch-form.css' // We will include a reference to a css file with broader scope to get access to styles defined for all Batch Form Components
+      ],
+      providers: [BATCH_FORM_VALUE_ACCESSOR] // We need to add a reference that says we are using the Batch Form Wrapper's Value Accessor.
+    })
+    // We need to make sure to actually extend the BatchFormWrapper.
+    export class BatchFormSelectComponent extends BatchFormWrapper<number> { 
+      // And now we can implement all of the 
+
+      /** Element ID for the select. Allows focusing on select from label clicks. */
+      @Input() id: string;
+      /** Value to be displayed in the label. */
+      @Input() label: string;
+      /** What mode the page is in ('view' for read; 'edit' for editing) */
+      @Input() viewMode: ViewMode;
+      /** The original value the select would have. This shouldn't be editable and should resemble what is known in the server. */
+      @Input() originalValue: number;
+      /** The original display value the select would display. This shouldn't be editable and should resemble what is known in the server. */
+      @Input() originalDisplayValue: string;
+      /** The array to populate the options list for the select control. */
+      @Input() dataSource: Array<any>;
+      /** The field to use for the value attribute on the option element. */
+      @Input() dataSourceValueField: string;
+      /** The field to use for inside the option element. */
+      @Input() dataSourceDisplayField: string;
+      /** The display value the select would display. This should be updated when the select detects a change. */
+      @Input() dirtyDisplayValue: string;
+      @Input() filterField: string;
+      @Input() filterValue: number;
+    }
+    ```
+
+2. Now that we have propertys available we can move to the template file to implement how we will use them.
+
+    ```html
+    <div [ngClass]="{'form-group': true, 'has-warning': value !== originalValue && viewMode !== ViewMode.New}">
+      <label class="control-label" [for]="id">{{label}}
+        <i *ngIf="value !== originalValue && viewMode !== ViewMode.New" class="glyphicon glyphicon-info-sign" tooltip="Original Value: {{originalDisplayValue}}"></i>
+      </label>
+      <select *ngIf="viewMode === ViewMode.Edit || viewMode === ViewMode.New" [(ngModel)]="value" [id]="id" class="form-control">
+        <ng-container *ngFor="let dataOption of dataSource">
+          <option *ngIf="dataOption[filterField] === filterValue" [ngValue]="dataOption[dataSourceValueField]">{{dataOption[dataSourceDisplayField]}}</option>
+        </ng-container>
+      </select>
+      <p *ngIf="viewMode === ViewMode.View" class="form-control-static">{{dirtyDisplayValue}}</p>
+    </div>
+    ```
+
+    We are making element that will have a `<select>` available when the page is in editable, or a plain text when not. It will have a label to tell what field it is for. It will have a styling and tooltips avaiable to show when it has been edited and what the previous value was.
+
+    ```html
+    <div [ngClass]="{'form-group': true, 'has-warning': value !== originalValue && viewMode !== ViewMode.New}">
+    ...
+    </div>
+    ```
+    
+    Notice that this line is binding to the `value` field. This is defined the by the `Batch Form Wrapper` and passed to our component using the `[(ngModel)]="..."`.
+    With this we are saying that it should always have the Bootstrap class of `form-group`, and when the value of the field has changed (and we aren't in `New` mode) that the form elements should have a `has-warning` class. This coloring change should be easy for the users to see that something has changed in this element.
+
+    ```html
+    <label class="control-label" [for]="id">{{label}}
+      <i *ngIf="value !== originalValue && viewMode !== ViewMode.New" class="glyphicon glyphicon-info-sign" tooltip="Original Value: {{originalDisplayValue}}"></i>
+    </label>
+    ```
+
+    With this part of it we are saying that the `<label>` element should get a Bootstrap styling of `control-label` this will bold the label and make it easier to distinguish the label from the value. We are also binding the `for` property to the `id` field we defined as an `Input` parameter.
+
+    We then bind the string we passed to `label` parameter as what will be rendered inside the tag.
+    
+    Next to the rendered text we have an `<i>` tag that we are only displaying if there are changes. It will render an icon and have a tooltip of the `originalDisplayValue`. This can be used to the user to remind them what is was previously if they edit this field by accident and want to revert their choice.
+
+    ```html
+    <select *ngIf="viewMode === ViewMode.Edit || viewMode === ViewMode.New" [(ngModel)]="value" [id]="id" class="form-control">
+      <ng-container *ngFor="let dataOption of dataSource">
+        <option *ngIf="dataOption[filterField] === filterValue" [ngValue]="dataOption[dataSourceValueField]">{{dataOption[dataSourceDisplayField]}}</option>
+      </ng-container>
+    </select>
+    ```
+
+    The next element is a `<select>` and is the most important part. We only show the `<select>` tag if we are in an editable state (View or New) mode. We are binding this element to the `value` parameter using the two way binding `[(ngModel)]`. We also will the element an `id` property and bind that to our `id` parameter so that when the user clicks the `<label>` element the browser will change the focus to the `<select>` tag.
+
+    The `<ng-container>` tag is used to loop through all the options on the `dataSource`. Inside of that we have the actual `<option>` tag which we only show if that row shouldn't be filtered out. We then bind that row's value to the `dataSourceValueField` that we passed, and inside the rendered part of the tag we show the `dataSourceDisplayField` field for the user to know which choice to make.
+
+    ```html
+    <p *ngIf="viewMode === ViewMode.View" class="form-control-static">{{dirtyDisplayValue}}</p>
+    ```
+
+    The last part is a simple `<p>` element that we use to show a simple string representation of the chosen option when we are in view mode.
+
+##### Batch Form Input Select
+
+#### Table / Repeater Batch Form Component
+
+### Troubleshooting Guide and Common Implementation Issues
+
+### Future Batch Module Core Development, Limitation, and Concerns
 
 ## Metadata Module
 
