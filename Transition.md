@@ -15,7 +15,7 @@
     - [Batch Form Guide](#batch-form-guide)
       - [Regular Batch Form Components](#regular-batch-form-components)
         - [Batch Form Select (`batch/batch-form/batch-form-select/`)](#batch-form-select-batchbatch-formbatch-form-select)
-        - [Batch Form Input Select](#batch-form-input-select)
+        - [Batch Form Input Select (`batch-form-input-select`)](#batch-form-input-select-batch-form-input-select)
       - [Table / Repeater Batch Form Component](#table-repeater-batch-form-component)
     - [Troubleshooting Guide and Common Implementation Issues](#troubleshooting-guide-and-common-implementation-issues)
     - [Future Batch Module Core Development, Limitation, and Concerns](#future-batch-module-core-development-limitation-and-concerns)
@@ -1326,13 +1326,173 @@ The goal for this component is to replace a regular `<select>` element with a co
 
 At this point we've implemented a new `Batch Form` component, and used it in one of our `Batch Part` tabs. We've written the component in such a way that we can reuse it in any other area that would want to use a simple `<select>` element which means the next time we need to implement a simple lookup table field it should be easier to do and should be 100% consistent with how we've done this one.
 
-##### Batch Form Input Select
+##### Batch Form Input Select (`batch-form-input-select`)
+
+The files that we will be looking at in this section:
+
+1. `batch/batch-form/batch-form-input-select/batch-form-input-select.component.ts`
+2. `batch/batch-form/batch-form-input-select/batch-form-input-select.component.html`
+3. `batch/batch-form/batch-form-input-select/batch-form-input-select.component.css`
+4. `batch/batch-order/batch-order.component.html`
+5. `batch/batch-order/batch-order.component.ts`
+
+Sometimes we will work on a form element that might be more complex than just one primary value being updated. For this next example of implementing a `Batch Form` component we will look at implementing both an input and a select in the same component. Working with two related values means that a simple binding to the sub-component with `[(ngModel)]` won't be available. So instead of using the fancy `Value Accessor` we'll use the regular `Output` parameter with a custom object being emitted.
+
+1. `batch/batch-form/batch-form-input-select/batch-form-input-select.component.ts`
+
+    In this file, unlike the `batch-form-select` or `batch-form-input-number`, we will skip making references to the `Batch Form Wrapper` class and Angular's `Value Accessor`. Instead we will be relying on the `Output` parameter that we define to be a way to inform the parent component of changes that occur. We will define a return type class that encapsulates all information that the parent component needs to know. We will define that in the same file as our component, but this is something that could optionally refactored to its own `*.model.ts` file.
+
+    ```ts
+    import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+    import { ViewMode } from '../../../core/view-mode/view-mode.model';
+
+    export class InputSelectGroup {
+      inputValue: number;
+      selectValue: number;
+      selectDisplayValue: string;
+    }
+    @Component({
+      selector: 'app-batch-form-input-select',
+      templateUrl: './batch-form-input-select.component.html',
+      styleUrls: ['./batch-form-input-select.component.css']
+    })
+    export class BatchFormInputSelectComponent implements OnInit {
+      ViewMode = ViewMode; // Need to declare it as local field for use in template.
+      @Input() id: string;
+      @Input() label: string;
+      @Input() viewMode: ViewMode;
+      @Input() inputValue: number;
+      @Input() originalInputValue: number;
+      @Input() selectValue: number;
+      @Input() originalSelectValue: number;
+      @Input() selectDisplayValue: string;
+      @Input() originalSelectDisplayValue: string;
+      @Input() dataSource: Array<any>;
+      @Input() dataSourceValueField: string;
+      @Input() dataSourceDisplayField: string;
+      @Output() onChange: EventEmitter<InputSelectGroup> = new EventEmitter<InputSelectGroup>();
+
+      constructor() { }
+
+      ngOnInit() {
+      }
+
+      selectChange(): void {
+        this.selectValue = Number(this.selectValue);
+        let dataOption = this.selectDisplayValue = this.dataSource.find(x => x[this.dataSourceValueField] === this.selectValue);
+        if (typeof dataOption !== 'undefined') {
+          this.selectDisplayValue = dataOption[this.dataSourceDisplayField];
+        }
+        this.emitChange();
+      }
+
+      emitChange(): void {
+        this.onChange.emit({
+          inputValue: this.inputValue,
+          selectValue: this.selectValue,
+          selectDisplayValue: this.selectDisplayValue
+        });
+      }
+    }
+    ```
+
+    Note how in this version of a `Batch Form` component we are making and `Output` parameter `onChange` which is an `EventEmitter<InputSelectGroup>` type. This is saying that the `Event Emitter` will ouput a `InputSelectGroup` type. This is the class that we defined as what fields will will need to inform the parent component about. Since the goal of this component is to have an `<input>` control with a `<select>` control of related data we need to inform the parent about the number value in the `<input>`, the number key value of the chosen option of the `<select>`, and the `string` representation of the chosen option.
+
+    We only emit values when we call the `emitChange()` function, we will have our `<input>` element call this, and our `<select>` element will first call `selectChange()` which will chain into this function.
+
+    Parameter | Type | Notes
+    :-- | :-- | :--
+    `ViewMode` | Local | Unlike in the `batch-form-input-number` or `batch-form-select` we need to define the `ViewMode` parameter since we are not extending the `Batch Form Wrapper` class which also defines the property.
+    `id` | Input | `id` attribute to use for the input. The input will be the first element rendered so the label should focus to it when clicked.
+    `label` | Input | Text to display in the Label
+    `viewMode` | Input | Current mode of the form (edit | new | view).
+    `inputValue` | Input | Editable copy of the data to used for the `<input>` element.
+    `originalInputValue` | Input | Non-editable copy of the data used for the `<input>` element.
+    `selectValue` | Input | Editable copy of the data used for the `<select>` element.
+    `originalSelectValue` | Input | Non-editable copy of the data used for the `<select>` element.
+    `selectDisplayValue` | Input | Changeable copy of the data used for what is rendered by the option of the `<select>` element.
+    `originalSelectDisplayValue` | Input | Non-changeable copy of the data used for what is rendered by the option of the `<select>` element.
+    `dataSource` | Input | Array of objects to be used as the `<option>` elements in the `<select>` element.
+    `dataSourceValueField` | Input | String representation of the the field name to be used for the `value` attribute on the `<option>` elements.
+    `dataSourceDisplayField` | Input | String representation of the the field name to be bound to inside the `<option>` elements.
+    `onChange` | Output | Described above, this `EventEmitter` will output an `object` that represents what has changed in this `Batch Form` component. It should be called if either element changes.
+
+2. `batch/batch-form/batch-form-input-select/batch-form-input-select.component.html`
+
+    Our template for this form control will be more complex since we need to deal with two editable elements, but will be mostly the same as we did in `batch-form-select`.
+
+    ```html
+    <div [ngClass]="{'form-group': true, 'has-warning': (inputValue !== originalInputValue || selectValue !== originalSelectValue) && viewMode !== ViewMode.New}">
+      <label class="control-label" [for]="id">{{label}}
+        <i *ngIf="(inputValue !== originalInputValue || selectValue !== originalSelectValue) && viewMode !== ViewMode.New" class="glyphicon glyphicon-info-sign" tooltip="Original Value: {{originalInputValue | commaNumbers}} {{originalSelectDisplayValue}}"></i>
+      </label>
+      <div *ngIf="viewMode === ViewMode.Edit || viewMode === ViewMode.New" class="input-group input-select-group">
+        <input type="number" class="form-control" [id]="id" [(ngModel)]="inputValue" (ngModelChange)="emitChange()">
+        <select class="form-control input-group-addon" [(ngModel)]="selectValue" (ngModelChange)="selectChange()">
+          <option *ngFor="let dataOption of dataSource" [ngValue]="dataOption[dataSourceValueField]">{{dataOption[dataSourceDisplayField]}}</option>
+        </select>
+      </div>
+      <p *ngIf="viewMode === ViewMode.View" class="form-control-static">{{inputValue | commaNumbers}}&nbsp;{{selectDisplayValue}}</p>
+    </div>
+    ```
+
+    The `has-warning` type of checks are more complex needs to check both values to see if they are different. The *Original Value* `tooltip` attribute and the `<p>` element also reference both values that we are keeping track of in this component. The `<input>` and `<select>` elements are bound with `[(ngModel)]` to our `Input` parameters instead of `value` like we did with the `Value Accessor` components. As mentioned above we also have specific `(ngModelChange)` functions for both editable elements which will chain into our `Output` emitter.
+
+3. `batch/batch-form/batch-form-input-select/batch-form-input-select.component.css`
+
+    Again if we had component specific styles they'd belong here, and this time we do!
+
+    ```css
+    .input-select-group {
+      width: 100%;
+    }
+
+    .input-select-group>.form-control:first-child {
+      width: 70%;
+    }
+
+    .input-select-group>.form-control:last-child {
+      width: 30%;
+    }
+    ```
+
+    What we are saying is that the `<select>` control should only take up a `width: 30%` leaving the majority of it for the `<input>` element. Bootstrap doesn't do a good job supporting this by default, so we've got to define it here.
+
+4. `batch/batch-order/batch-order.component.html`
+
+    Now we will use this `Batch Form` component in our `Batch Order` component for the `Request Amount` and the associated `Unit of Measure`.
+
+    ```html
+    ...
+    <div class="col-xs-12 col-sm-3">
+    ...
+      <app-batch-form-input-select [id]="'orderAmountInput'" [label]="'Quantity to Produce'" [viewMode]="mode" [inputValue]="batchOrder.dirtyData.OrderAmount" [originalInputValue]="batchOrder.originalData.OrderAmount" [selectValue]="batchOrder.dirtyData.OrderAmountUOMID" [originalSelectValue]="batchOrder.originalData.OrderAmountUOMID" [selectDisplayValue]="batchOrder.dirtyData.OrderAmountUOM" [originalSelectDisplayValue]="batchOrder.originalData.OrderAmountUOM" [dataSource]="unitsOfMeasure" [dataSourceValueField]="'UnitOfMeasureID'" [dataSourceDisplayField]="'Abbreviation'" (onChange)="orderAmountChange($event)"></app-batch-form-input-select>
+    </div>
+    ...
+    ```
+
+    We reference this in the same fashion as the `batch-form-select` component, but need to specify more `Input` parameters (since it is doing more), and don't worry about a two-way binding via `[(ngModel)]`; instead we are taking an `$event` from the `(onChange)` `Output` parameter and pass that to a function we've defined in this component. This works well for this type of data where there would be two pieces of information that could really share the same label and are very closely related. For this Request Amount, logically we'd think about it as a single item (ex: How much? `5 Lbs`), but are required to split it up for data storage and integrity issues (Amount: `5`; Unit: `Lbs`.
+
+5. `batch/batch-order/batch-order.component.ts`
+
+    ```ts
+    orderAmountChange(event: InputSelectGroup): void {
+      this.batchOrder.dirtyData.OrderAmount = event.inputValue;
+      this.batchOrder.dirtyData.OrderAmountUOMID = event.selectValue;
+      this.batchOrder.dirtyData.OrderAmountUOM = event.selectDisplayValue;
+      this.batchOrderChange();
+    }
+    ```
+
+    In this final piece we inform our parent component of with the updated values and then chain into the `batchOrderChange()` function to notify the `Batch Service` that the object has changed and that it can store the new object in Local Storage.
 
 #### Table / Repeater Batch Form Component
 
 ### Troubleshooting Guide and Common Implementation Issues
 
 ### Future Batch Module Core Development, Limitation, and Concerns
+
+Obviously a perfect design in every conceivable way; leaves no possible room for concerns.
 
 ## Metadata Module
 
