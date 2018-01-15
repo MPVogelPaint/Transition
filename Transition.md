@@ -25,6 +25,7 @@
     - [Design](#design)
     - [Table](#table)
     - [Calendar](#calendar)
+  - [Future Development / Nice to have feature](#future-development-nice-to-have-feature)
 - [Eparts SDS Services](#eparts-sds-services)
   - [Eparts SDS Uploader](#eparts-sds-uploader)
   - [SDS Email Log (Download Distribution Log)](#sds-email-log-download-distribution-log)
@@ -1519,6 +1520,22 @@ Displays results in a grid. Plenty of existing examples. Requires two sprocs one
 ### Calendar
 
 Returns a month at a time. Custom display views can be implemented and switched between. Should return all possible results for that month, but the Calendar control allows changing the aggregator date on the client.
+
+## Future Development / Nice to have feature
+
+1. Error Logging
+    1. Re-enable Client error logging.
+    2. Refactor to show max of X error messages and then a give an expand to show the rest.
+    3. Group Similar Errors message.
+    4. Ignore Errors that we don't care about.
+    5. Send a daily/weekly summary to a dev about errors that are happening.
+2. Client Route Guarding better implementation and make sure more places have it.
+3. Implement Custom Batch Views and form to edit them with.
+4. Calendar Day Template
+5. Calendar Duration Events (Start on 1/15 ends on 1/17 -> 3 day event)
+6. app navbar should work better at all screen sizes.
+7. Search bar doesn't always work (On OC Powder: "2339" last 4 -> No results; "P171492339" -> result).
+8. Cache some metadata routes like Unit of Measure
 
 ---
 
