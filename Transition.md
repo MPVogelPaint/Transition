@@ -1536,6 +1536,11 @@ Returns a month at a time. Custom display views can be implemented and switched 
 6. app navbar should work better at all screen sizes.
 7. Search bar doesn't always work (On OC Powder: "2339" last 4 -> No results; "P171492339" -> result).
 8. Cache some metadata routes like Unit of Measure
+9. Color indicators for batches based off of formula.
+10. View Mode for Batch Module should be a behavior subject.
+11. Batch Module save should warn what tabs are dirty if more than current.
+12. Batch Module tabs should show a dirty dot next to their name if dirty.
+13. Refactor things like Batch Order Details to a sub-component inside the BatchOrder parent folder.
 
 ---
 
