@@ -1405,7 +1405,7 @@ Sometimes we will work on a form element that might be more complex than just on
     `ViewMode` | Local | Unlike in the `batch-form-input-number` or `batch-form-select` we need to define the `ViewMode` parameter since we are not extending the `Batch Form Wrapper` class which also defines the property.
     `id` | Input | `id` attribute to use for the input. The input will be the first element rendered so the label should focus to it when clicked.
     `label` | Input | Text to display in the Label
-    `viewMode` | Input | Current mode of the form (edit | new | view).
+    `viewMode` | Input | Current mode of the form (edit/new/view).
     `inputValue` | Input | Editable copy of the data to used for the `<input>` element.
     `originalInputValue` | Input | Non-editable copy of the data used for the `<input>` element.
     `selectValue` | Input | Editable copy of the data used for the `<select>` element.
@@ -1487,6 +1487,8 @@ Sometimes we will work on a form element that might be more complex than just on
     In this final piece we inform our parent component of with the updated values and then chain into the `batchOrderChange()` function to notify the `Batch Service` that the object has changed and that it can store the new object in Local Storage.
 
 #### Table / Repeater Batch Form Component
+
+Sometimes we will want to use a Batch Form element inside of a table or other element that is repeating over a dataset using `*ngFor`. This requires some special consideration. 
 
 ### Troubleshooting Guide and Common Implementation Issues
 
